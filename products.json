@@ -1,0 +1,46 @@
+[
+{
+"id": "cushion",
+"type": "photo",
+"media": "https://placehold.co/800x600/eeeeee/999999?text=Cushion+High+Res",
+"cardMedia": "https://placehold.co/800x450/eeeeee/999999?text=Cushion+Photo",
+"title": "人體工學護腰坐墊",
+"tag": "社畜自救",
+"hashtag": "#久坐救星 #百元升級 #蝦皮盲狙",
+"text": "差點腦波弱去刷破萬辦公椅，死馬當活馬醫買了這組。原本懸空的下背被頂好頂滿，幾百塊就能自救的事，別用脊椎硬撐。",
+"link": "#"
+},
+{
+"id": "earbuds",
+"type": "video",
+"rawIframe": "<iframe width="560" height="315" src="https://www.youtube.com/embed/riIsPoxrnbI?si=5YQW6AJ9HMKodGBs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>",
+"cardMedia": "https://placehold.co/800x450/eeeeee/999999?text=Earbuds+Video",
+"title": "1:1 原版 Pro 3代",
+"tag": "降維打擊",
+"hashtag": "#主動降噪 #神還原外觀 #不當盤子",
+"text": "這代降噪跟功能居然強到有感，外觀和孔位還1:1神還原，價格更只要原廠的零頭！不想當盤子被割韭菜的人，執行長非常推薦直接升級～",
+"link": "#"
+},
+{
+"id": "massage_gun",
+"type": "video",
+"rawIframe": "<iframe width="560" height="315" src="https://www.youtube.com/embed/8xkEICotpOM?si=dummy" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>",
+"cardMedia": "https://placehold.co/800x450/eeeeee/999999?text=Massage+Gun+Video",
+"title": "微型深層筋膜槍",
+"tag": "長輩神器",
+"hashtag": "#深層物理超渡 #金屬質感 #孝親首選",
+"text": "體積跟手機一樣小，卻能精準打通深層痠痛點。金屬質感超高級，不用兩千連五百都不用，放客廳、放房間、送親戚一次搞定。",
+"link": "#"
+},
+{
+"id": "diffuser",
+"type": "photo",
+"media": "https://placehold.co/800x600/eeeeee/999999?text=Diffuser+High+Res",
+"cardMedia": "https://placehold.co/800x450/eeeeee/999999?text=Diffuser+Photo",
+"title": "木紋香氛水氧機",
+"tag": "質感生活",
+"hashtag": "#秋冬必備 #暖色黃光 #舒壓香氛",
+"text": "秋冬乾燥必備。暖色黃光搭配冉冉上升的水霧，幾百塊就能無無痛升級房間的質感與香氣。不僅能緩解乾燥，看著煙霧也能達到舒壓效果。",
+"link": "#"
+}
+]
