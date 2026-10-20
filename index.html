@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>蝦皮好物研究中心 | 嚴選平價酷東西</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 PapaParse 解析 CSV 神器 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body { 
+            font-family: 'Inter', 'Noto Sans TC', sans-serif; 
+            background-color: #ffffff;
+            color: #171717;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        ::-webkit-scrollbar { display: none; }
+        
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen selection:bg-neutral-900 selection:text-white">
+
+    <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
+        <div class="w-full px-6 lg:px-12 h-20 flex justify-between items-center gap-4">
+            <a href="#" class="shrink-0 h-10 flex items-center py-5">
+                <img src="./logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <nav class="hidden md:flex gap-6">
+                    <a href="#" class="text-sm font-bold text-neutral-900 hover:text-neutral-600 transition-colors">精選好物</a>
+                    <a href="./disclaimer.pdf" target="_blank" class="text-sm font-bold text-neutral-400 hover:text-neutral-900 transition-colors">使用者須知</a>
+                </nav>
+                
+                <div class="flex items-center gap-2 md:hidden">
+                    <button id="mobileSearchBtn" class="p-2 text-neutral-900 hover:text-neutral-600 transition-colors focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                    </button>
+
+                    <button id="mobileMenuBtn" class="p-2 text-neutral-900 hover:text-neutral-600 transition-colors focus:outline-none relative w-6 h-6">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full stroke-current stroke-2">
+                            <path d="M4 6H16" stroke-linecap="round"/>
+                            <path d="M4 12H12" stroke-linecap="round"/>
+                            <path d="M4 18H20" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobileSearchDropdown" class="hidden md:hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg px-6 py-4">
+            <div class="relative w-full group">
+                <input type="text" id="mobileSearchInput" onkeyup="handleSearch(event, this.value)" placeholder="搜尋好物 (例如: 坐墊, 耳機...)" class="w-full border-2 border-neutral-100 rounded-lg text-sm py-2.5 pl-4 pr-10 focus:outline-none focus:border-neutral-900 transition-colors text-neutral-900 font-medium">
+                <button onclick="handleSearch(null, document.getElementById('mobileSearchInput').value, true)" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-neutral-900 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg z-50">
+            <nav class="flex flex-col px-6 py-4 gap-4">
+                <a href="#" class="text-base font-bold text-neutral-900 transition-colors">精選好物</a>
+                <a href="./disclaimer.pdf" target="_blank" class="text-base font-bold text-neutral-400 hover:text-neutral-900 transition-colors">使用者須知</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-6 w-full pb-32">
+        
+        <div class="w-full pt-8 pb-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-neutral-100">
+            
+            <div class="flex items-center gap-6 shrink-0">
+                <span class="text-sm font-black text-neutral-900 cursor-pointer">熱度最高</span>
+                <span class="text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors">最近更新</span>
+            </div>
+
+            <div class="hidden md:block w-80 relative group shrink-0">
+                <input type="text" id="desktopSearchInput" onkeyup="handleSearch(event, this.value)" placeholder="搜尋好物 (例如: 坐墊, 耳機...)" class="w-full border-2 border-neutral-100 rounded-lg text-sm py-2.5 pl-4 pr-10 focus:outline-none focus:border-neutral-900 transition-colors text-neutral-900 font-medium">
+                <button onclick="handleSearch(null, document.getElementById('desktopSearchInput').value, true)" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-neutral-900 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                </button>
+            </div>
+            
+        </div>
+
+        <!-- 初始狀態加入 Loading 提示 -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+            <div class="col-span-full flex flex-col items-center justify-center py-16">
+                <div class="w-8 h-8 border-4 border-neutral-200 border-t-neutral-900 rounded-full animate-spin mb-4"></div>
+                <p class="text-neutral-500 font-medium text-sm">正在從資料庫載入最新好物...</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none" onclick="handleBackdropClick(event)">
+        <!-- 內容容器 -->
+        <div id="modalContent" class="relative bg-white rounded-xl shadow-2xl overflow-hidden w-full transition-transform duration-300 scale-95 flex">
+            <!-- 動態生成內容 -->
+        </div>
+    </div>
+
+    <footer class="w-full border-t border-neutral-100 bg-white mt-auto">
+        <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <h4 class="text-neutral-900 font-bold text-lg tracking-tight mb-1">蝦皮好物研究中心</h4>
+                <p class="text-xs text-neutral-400">© 2026 Shopee Research Center.</p>
+            </div>
+            <div class="text-left md:text-right">
+                <div class="flex gap-6 md:justify-end">
+                    <a href="#" aria-label="Instagram" class="text-neutral-400 hover:text-neutral-900 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                    </a>
+                    <a href="#" aria-label="Threads" class="text-neutral-400 hover:text-neutral-900 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.09 10.65c-.09-1.92-1.2-4.14-3.57-5.59-2.31-1.42-5.46-1.74-8.13-1.12-2.39.55-4.48 1.95-5.91 3.96C2.96 10.04 2 12.56 2 15.34c0 2.92.86 5.56 2.41 7.54 1.48 1.88 3.55 3.01 5.92 3.1 2.37.1 4.74-.78 6.47-2.39 1.74-1.63 2.76-3.9 2.76-6.28v-.15c0-1.22-.38-2.38-1.09-3.26-.71-.87-1.68-1.39-2.73-1.39-1.32 0-2.43.76-3.03 1.9-.38-.93-1.14-1.65-2.07-2-.91-.35-1.93-.32-2.81.08-.85.39-1.54 1.07-1.93 1.9-.38.82-.49 1.76-.3 2.65.17.84.62 1.58 1.25 2.11.64.53 1.48.82 2.36.82 1.34 0 2.51-.77 3.09-1.9.43.83 1.23 1.36 2.14 1.36 1.05 0 1.95-.56 2.47-1.47v.15c0 1.83-.8 3.65-2.19 4.96-1.4 1.3-3.32 2.01-5.24 1.94-1.9-.07-3.56-1.02-4.73-2.5-1.17-1.49-1.82-3.5-1.82-5.71 0-2.22.75-4.22 1.98-5.83 1.15-1.52 2.83-2.61 4.76-3.06 2.1-.49 4.62-.2 6.46.93 1.84 1.14 2.72 2.93 2.79 4.49zM12.92 13.91c-.26.54-.74.92-1.32.92-.58 0-1.06-.38-1.32-.92-.25-.52-.33-1.14-.2-1.72.11-.53.44-1 .89-1.31.45-.31.99-.44 1.52-.35.53.09 1.02.39 1.36.81.34.41.54.95.54 1.52v.12c-.08 1-.95 1.77-1.97 1.77h-.01z"/></svg>
+                    </a>
+                    <a href="#" aria-label="Facebook" class="text-neutral-400 hover:text-neutral-900 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 🚀 執行長，請把發佈後的 CSV 網址貼在下面這行！
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkwCDK3EhdtX9FMYg6G3lOJHT88-_BAE4gStZri7gG25Op7tLiM-qDM3u47QRgzFlAkCoqeEQV2Ij-/pub?gid=0&single=true&output=csv';
+        
+        // 🚀 將剛剛取得的 GAS 網頁應用程式網址貼在這裡！
+        const GAS_WEBHOOK_URL = '請貼上你的_GAS_網址';
+
+        let products = []; // 變成動態陣列，不再寫死
+
+        const productGrid = document.getElementById('productGrid');
+        const modal = document.getElementById('productModal');
+        const modalContent = document.getElementById('modalContent');
+
+        // 自動去雲端抓取資料庫
+        async function fetchProducts() {
+            if (GOOGLE_SHEET_CSV_URL === '請貼上你的_CSV_網址') {
+                productGrid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                        <p class="text-red-500 font-bold mb-2">尚未串接 Google Sheets！</p>
+                        <p class="text-neutral-500 text-sm">請將 index.html 中的 GOOGLE_SHEET_CSV_URL 替換為你的網址。</p>
+                    </div>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                const csvText = await response.text();
+
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        // 把 CSV 的資料轉換成我們網頁看得懂的格式
+                        products = results.data.map(row => ({
+                            id: row.id,
+                            type: row.type,
+                            media: row.media,
+                            title: row.title,
+                            // 分類陣列：使用者在表格用「半形逗號」隔開即可
+                            categories: row.categories ? row.categories.split(',').map(c => c.trim()) : [],
+                            rating: parseFloat(row.rating) || 0,
+                            text: row.text,
+                            link: row.link,
+                            clicks: parseInt(row.clicks) || 0,
+                            rawIframe: row.rawIframe || ''
+                        }));
+
+                        // 🏆 智能排序：點擊數優先，點擊數一樣再比星級
+                        const sortedProducts = [...products].sort((a, b) => {
+                            if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+                            if (b.rating !== a.rating) return b.rating - a.rating;
+                            return Math.random() - 0.5;
+                        });
+
+                        renderCards(sortedProducts);
+                    }
+                });
+            } catch (error) {
+                console.error("讀取資料庫失敗:", error);
+                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-neutral-500">無法載入資料，請重新整理網頁。</div>';
+            }
+        }
+
+        function renderCards(dataToRender) {
+            productGrid.innerHTML = ''; 
+
+            if (dataToRender.length === 0) {
+                productGrid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-16">
+                        <p class="text-neutral-500 font-medium">找不到相關的好物，換個關鍵字試試看？</p>
+                    </div>
+                `;
+                return;
+            }
+
+            dataToRender.forEach(product => {
+                const videoIconHTML = product.type === 'video' ? `
+                    <div class="absolute bottom-2 right-2 pointer-events-none text-white drop-shadow-md opacity-90 scale-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg>
+                    </div>
+                ` : '';
+
+                const rawText = product.text ? product.text.replace(/<[^>]*>?/gm, '') : '';
+
+                const cardHTML = `
+                    <article class="flex flex-col h-full group">
+                        <div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden mb-4 relative rounded cursor-pointer" onclick="openModal('${product.id}')">
+                            <img src="${product.media}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            ${videoIconHTML}
+                        </div>
+                        <h2 class="text-lg font-bold text-neutral-900 mb-2 line-clamp-1">${product.title}</h2>
+                        <p class="text-neutral-500 text-sm leading-relaxed mb-6 line-clamp-2 flex-grow">
+                            ${rawText}
+                        </p>
+                        <div class="mt-auto flex items-center gap-2">
+                            <button onclick="openModal('${product.id}')" class="flex-1 border border-neutral-200 hover:border-neutral-900 text-neutral-900 font-bold py-2.5 px-3 rounded text-xs transition-colors text-center bg-white">
+                                查看介紹
+                            </button>
+                            <a href="${product.link}" target="_blank" onclick="trackClick('${product.id}')" class="flex-1 bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-2.5 px-3 rounded text-xs transition-colors text-center border border-neutral-900">
+                                蝦皮分潤
+                            </a>
+                        </div>
+                    </article>
+                `;
+                
+                productGrid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        // 🚀 黑魔法：背景偷偷發送訊號
+        function trackClick(productId) {
+            if (GAS_WEBHOOK_URL === '請貼上你的_GAS_網址') return;
+            // 發出訊號後就不管它，不會影響使用者跳轉到蝦皮的流暢度
+            fetch(`${GAS_WEBHOOK_URL}?id=${productId}`, { mode: 'no-cors' }).catch(console.error);
+        }
+
+        // 啟動資料庫連線
+        fetchProducts();
+
+        function handleSearch(event, query, isButton = false) {
+            if (!query || !query.trim()) {
+                renderCards(products);
+                return;
+            }
+
+            const lowerQuery = query.toLowerCase().trim();
+            const filteredProducts = products.filter(p => {
+                const titleMatch = p.title && p.title.toLowerCase().includes(lowerQuery);
+                const textMatch = p.text && p.text.toLowerCase().includes(lowerQuery);
+                
+                return titleMatch || textMatch;
+            });
+
+            renderCards(filteredProducts);
+        }
+
+        function openModal(productId) {
+            const data = products.find(p => p.id === productId);
+            if (!data) return;
+
+            const postContentHTML = `
+                <h2 class="text-2xl font-black mb-4 text-neutral-900">${data.title}</h2>
+                <div class="text-neutral-600 text-sm leading-loose mb-8 flex-grow">
+                    ${data.text}
+                </div>
+                <div class="mt-auto pt-6 border-t border-neutral-100">
+                    <a href="${data.link}" target="_blank" onclick="trackClick('${data.id}')" class="block w-full bg-neutral-900 text-white font-bold py-3.5 rounded text-center hover:bg-neutral-800 transition-colors shadow-lg">
+                        前往蝦皮領取優惠
+                    </a>
+                </div>
+            `;
+
+            const closeBtnHTML = `
+                <button onclick="closeModal()" class="absolute top-4 right-4 z-50 text-neutral-400 hover:text-neutral-900 bg-white/80 hover:bg-white backdrop-blur-md p-1.5 rounded-full transition-colors shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+
+            if (data.type === 'video' && data.rawIframe) {
+                modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-y-auto md:overflow-hidden transition-transform duration-300 scale-95 flex flex-col md:flex-row w-full max-w-[400px] md:max-w-none md:w-auto max-h-[90vh] md:h-[85vh]";
+                const responsiveIframe = data.rawIframe.replace('<iframe', '<iframe class="absolute inset-0 w-full h-full z-20"');
+
+                modalContent.innerHTML = `
+                    ${closeBtnHTML}
+                    <div class="w-full aspect-[9/16] md:w-auto md:h-full md:aspect-[9/16] bg-black relative shrink-0 md:rounded-l-xl md:rounded-tr-none overflow-hidden">
+                        ${responsiveIframe}
+                    </div>
+                    <div class="w-full md:w-[360px] p-6 md:p-8 flex flex-col flex-1 bg-white">
+                        ${postContentHTML}
+                    </div>
+                `;
+            } else {
+                modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-2xl transition-transform duration-300 scale-95 flex flex-col max-h-[90vh]";
+                
+                modalContent.innerHTML = `
+                    ${closeBtnHTML}
+                    <div class="w-full h-full overflow-y-auto no-scrollbar flex flex-col relative">
+                        <div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden shrink-0">
+                            <img src="${data.media}" class="w-full h-full object-cover" alt="${data.title}">
+                        </div>
+                        <div class="w-full p-6 md:p-8 flex flex-col flex-grow bg-white">
+                            ${postContentHTML}
+                        </div>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            void modal.offsetWidth; 
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.remove('flex'); 
+                modal.classList.add('hidden');
+                modalContent.innerHTML = ''; 
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function handleBackdropClick(event) {
+            if (event.target === modal) closeModal();
+        }
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+        const mobileSearchDropdown = document.getElementById('mobileSearchDropdown');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            if (!mobileSearchDropdown.classList.contains('hidden')) {
+                mobileSearchDropdown.classList.add('hidden');
+            }
+        });
+
+        mobileSearchBtn.addEventListener('click', () => {
+            mobileSearchDropdown.classList.toggle('hidden');
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
