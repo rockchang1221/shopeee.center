@@ -33,9 +33,9 @@
 
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
         <div class="w-full px-6 lg:px-12 h-20 flex justify-between items-center gap-4">
-            <a href="#" class="shrink-0 h-10 flex items-center py-5">
-                <img src="./logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
-            </a>
+        <a href="#" class="shrink-0 flex items-center h-6">
+            <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
+        </a>
             
             <div class="flex items-center gap-4">
                 <nav class="hidden md:flex gap-6">
@@ -142,7 +142,7 @@
         // 🚀 執行長，請把發佈後的 CSV 網址貼在下面這行！
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkwCDK3EhdtX9FMYg6G3lOJHT88-_BAE4gStZri7gG25Op7tLiM-qDM3u47QRgzFlAkCoqeEQV2Ij-/pub?gid=0&single=true&output=csv';
         
-        // 🚀 將剛剛取得的 GAS 網頁應用程式網址貼在這裡！(請務必換成你自己的)
+        // 🚀 將剛剛取得的 GAS 網頁應用程式網址貼在這裡！
         const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzqYVvaDG2HCk8qj9Vg8gwn9kzIGqsPc5XeF7zQf5ADGK0sGu6tUp8TxOBcE7fFOPul/exec';
 
         let products = []; // 變成動態陣列，不再寫死
@@ -249,7 +249,8 @@
 
         // 🚀 黑魔法：背景偷偷發送訊號
         function trackClick(productId) {
-            // (防呆機制已移除) 發出訊號後就不管它，不會影響使用者跳轉到蝦皮的流暢度
+            if (GAS_WEBHOOK_URL === 'https://script.google.com/macros/s/AKfycbzqYVvaDG2HCk8qj9Vg8gwn9kzIGqsPc5XeF7zQf5ADGK0sGu6tUp8TxOBcE7fFOPul/exec') return;
+            // 發出訊號後就不管它，不會影響使用者跳轉到蝦皮的流暢度
             fetch(`${GAS_WEBHOOK_URL}?id=${productId}`, { mode: 'no-cors' }).catch(console.error);
         }
 
