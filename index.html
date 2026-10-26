@@ -19,7 +19,7 @@
 
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
         <div class="w-full px-6 lg:px-12 h-20 flex justify-between items-center gap-4">
-            <a href="#" class="shrink-0 flex items-center h-6">
+            <a href="#" class="shrink-0 flex items-center h-10">
                 <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
             </a>
             
@@ -133,24 +133,39 @@
             }
 
             dataToRender.forEach(product => {
-                const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white drop-shadow-md"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
+                const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
                 
-                // 增加 undefined 處理，避免出錯
-                const displayTitle = product.title || '無標題商品';
-                const displayMedia = product.media || 'https://placehold.co/800x600/eeeeee/999999?text=No+Image';
-                const rawText = product.text ? product.text.replace(/<[^>]*>?/gm, '') : '沒有提供介紹。';
-                
+                // 😈 暗黑兵法：整張卡片都是陷阱
                 const cardHTML = `
-                    <article class="flex flex-col h-full group">
-                        <div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden mb-4 relative rounded cursor-pointer" onclick="openModal('${product.id}')">
-                            <img src="${displayMedia}" alt="${displayTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <article class="flex flex-col h-full group bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer" onclick="trackClick('${product.id}'); window.open('${product.link}', '_blank');">
+                        <!-- 圖片區塊 -->
+                        <div class="w-full aspect-[3/2] bg-neutral-50 overflow-hidden relative border-b border-neutral-100">
+                            <img src="${product.media}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             ${videoIconHTML}
                         </div>
-                        <h2 class="text-lg font-bold text-neutral-900 mb-2 line-clamp-1">${displayTitle}</h2>
-
-                        <div class="mt-auto flex items-center gap-2">
-                            <button onclick="openModal('${product.id}')" class="flex-1 border border-neutral-200 hover:border-neutral-900 text-neutral-900 font-bold py-2.5 px-3 rounded text-xs transition-colors text-center bg-white">查看介紹</button>
-                            <a href="${product.link}" target="_blank" onclick="trackClick('${product.id}')" class="flex-1 bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-2.5 px-3 rounded text-xs transition-colors text-center border border-neutral-900">蝦皮分潤</a>
+                        
+                        <!-- 內容區塊 -->
+                        <div class="p-4 md:p-5 flex flex-col flex-grow">
+                            <!-- 商品標題 (拿掉 hover 變色，維持原本沉穩的黑色) -->
+                            <h2 class="text-base font-bold text-neutral-900 line-clamp-2 mb-4 flex-grow">${product.title}</h2>
+                            
+                            <!-- 底部左右分流 -->
+                            <div class="flex justify-between items-end mt-auto pt-2">
+                                <!-- 左下角：介紹 Icon (加入 event.stopPropagation() 防護罩，點擊只開介紹不跳轉) -->
+                                <button onclick="event.stopPropagation(); openModal('${product.id}')" class="text-neutral-400 hover:text-neutral-900 transition-colors p-1 -ml-1 z-10" title="查看商品介紹">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                    </svg>
+                                </button>
+                                
+                                <!-- 右下角：蝦皮傳送門 (改為純文字排版，點擊事件直接由外層卡片接管) -->
+                                <div class="text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors flex items-center gap-1 pb-1">
+                                    蝦皮傳送門
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </article>
                 `;
