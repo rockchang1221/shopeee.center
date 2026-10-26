@@ -19,7 +19,6 @@
 
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
         <div class="w-full px-6 lg:px-12 h-20 flex justify-between items-center gap-4">
-            <!-- Logo 修復版：移除了會導致高度變成 0 的 padding -->
             <a href="#" class="shrink-0 flex items-center h-10">
                 <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
             </a>
@@ -76,11 +75,9 @@
     </div>
 
     <script>
-        // 🚀 1. 請在此貼上你的 Google Sheet 發佈出來的 CSV 網址
-        const GOOGLE_SHEET_CSV_URL = '請替換成你的CSV網址';
-        
-        // 🚀 2. 請在此貼上你部署好的 GAS 網頁應用程式網址
-        const GAS_WEBHOOK_URL = '請替換成你的GAS網址';
+        // 🚀 執行長的專屬資料庫 API
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQGHKBfq5lf7E6AEp4yarLpPqhvUzE3rXHMPJY7bU2-h2LwIQLk3CDAx8l6kv95aG-HyCL332bSBBQX/pub?gid=0&single=true&output=csv';
+        const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw21ICqg7RSgUJswjKjSWguDwNosJ7lned_UO61EKHiDY452D_0fqGZbRaiAhcTiUrj0Q/exec';
 
         let products = [];
         const productGrid = document.getElementById('productGrid');
@@ -88,11 +85,6 @@
         const modalContent = document.getElementById('modalContent');
 
         async function fetchProducts() {
-            if (GOOGLE_SHEET_CSV_URL.includes('https://docs.google.com/spreadsheets/d/e/2PACX-1vQGHKBfq5lf7E6AEp4yarLpPqhvUzE3rXHMPJY7bU2-h2LwIQLk3CDAx8l6kv95aG-HyCL332bSBBQX/pub?gid=0&single=true&output=csv')) {
-                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-red-500 font-bold">請先至程式碼底部填寫 CSV 網址！</div>';
-                return;
-            }
-
             try {
                 const response = await fetch(GOOGLE_SHEET_CSV_URL);
                 const csvText = await response.text();
@@ -100,6 +92,10 @@
                 Papa.parse(csvText, {
                     header: true,
                     skipEmptyLines: true,
+                    // 🛡️ 終極防彈裝甲：自動把表頭轉成小寫並去除空白，防止 undefined 災難！
+                    transformHeader: function(header) {
+                        return header.toLowerCase().trim();
+                    },
                     complete: function(results) {
                         products = results.data.map(row => ({
                             id: row.id,
@@ -111,7 +107,7 @@
                             text: row.text,
                             link: row.link,
                             clicks: parseInt(row.clicks) || 0,
-                            rawIframe: row.rawIframe || ''
+                            rawIframe: row.rawiframe || row.rawIframe || '' 
                         }));
 
                         const sortedProducts = [...products].sort((a, b) => {
@@ -125,7 +121,7 @@
                 });
             } catch (error) {
                 console.error("讀取失敗:", error);
-                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-neutral-500">載入失敗。</div>';
+                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-neutral-500">載入失敗，請重新整理網頁。</div>';
             }
         }
 
@@ -137,16 +133,20 @@
             }
 
             dataToRender.forEach(product => {
-                const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
-                const rawText = product.text ? product.text.replace(/<[^>]*>?/gm, '') : '';
+                const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white drop-shadow-md"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
+                
+                // 增加 undefined 處理，避免出錯
+                const displayTitle = product.title || '無標題商品';
+                const displayMedia = product.media || 'https://placehold.co/800x600/eeeeee/999999?text=No+Image';
+                const rawText = product.text ? product.text.replace(/<[^>]*>?/gm, '') : '沒有提供介紹。';
                 
                 const cardHTML = `
                     <article class="flex flex-col h-full group">
                         <div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden mb-4 relative rounded cursor-pointer" onclick="openModal('${product.id}')">
-                            <img src="${product.media}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <img src="${displayMedia}" alt="${displayTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             ${videoIconHTML}
                         </div>
-                        <h2 class="text-lg font-bold text-neutral-900 mb-2 line-clamp-1">${product.title}</h2>
+                        <h2 class="text-lg font-bold text-neutral-900 mb-2 line-clamp-1">${displayTitle}</h2>
                         <p class="text-neutral-500 text-sm leading-relaxed mb-6 line-clamp-2 flex-grow">${rawText}</p>
                         <div class="mt-auto flex items-center gap-2">
                             <button onclick="openModal('${product.id}')" class="flex-1 border border-neutral-200 hover:border-neutral-900 text-neutral-900 font-bold py-2.5 px-3 rounded text-xs transition-colors text-center bg-white">查看介紹</button>
@@ -159,7 +159,7 @@
         }
 
         function trackClick(productId) {
-            if (!GAS_WEBHOOK_URL || GAS_WEBHOOK_URL.includes('https://script.google.com/macros/s/AKfycbw21ICqg7RSgUJswjKjSWguDwNosJ7lned_UO61EKHiDY452D_0fqGZbRaiAhcTiUrj0Q/exec')) return;
+            if (!GAS_WEBHOOK_URL) return;
             fetch(`${GAS_WEBHOOK_URL}?id=${productId}`, { mode: 'no-cors' }).catch(console.error);
         }
 
@@ -179,9 +179,12 @@
             const data = products.find(p => p.id === productId);
             if (!data) return;
 
+            const displayTitle = data.title || '無標題商品';
+            const displayMedia = data.media || 'https://placehold.co/800x600/eeeeee/999999?text=No+Image';
+
             const postContentHTML = `
-                <h2 class="text-2xl font-black mb-4 text-neutral-900">${data.title}</h2>
-                <div class="text-neutral-600 text-sm leading-loose mb-8 flex-grow">${data.text}</div>
+                <h2 class="text-2xl font-black mb-4 text-neutral-900">${displayTitle}</h2>
+                <div class="text-neutral-600 text-sm leading-loose mb-8 flex-grow">${data.text || '沒有提供介紹。'}</div>
                 <div class="mt-auto pt-6 border-t border-neutral-100">
                     <a href="${data.link}" target="_blank" onclick="trackClick('${data.id}')" class="block w-full bg-neutral-900 text-white font-bold py-3.5 rounded text-center hover:bg-neutral-800 transition-colors shadow-lg">前往蝦皮領取優惠</a>
                 </div>
@@ -194,7 +197,7 @@
                 modalContent.innerHTML = `${closeBtnHTML}<div class="w-full aspect-[9/16] md:w-auto md:h-full md:aspect-[9/16] bg-black relative shrink-0 md:rounded-l-xl md:rounded-tr-none overflow-hidden">${responsiveIframe}</div><div class="w-full md:w-[360px] p-6 md:p-8 flex flex-col flex-1 bg-white">${postContentHTML}</div>`;
             } else {
                 modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-2xl transition-transform duration-300 scale-95 flex flex-col max-h-[90vh]";
-                modalContent.innerHTML = `${closeBtnHTML}<div class="w-full h-full overflow-y-auto no-scrollbar flex flex-col relative"><div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden shrink-0"><img src="${data.media}" class="w-full h-full object-cover" alt="${data.title}"></div><div class="w-full p-6 md:p-8 flex flex-col flex-grow bg-white">${postContentHTML}</div></div>`;
+                modalContent.innerHTML = `${closeBtnHTML}<div class="w-full h-full overflow-y-auto no-scrollbar flex flex-col relative"><div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden shrink-0"><img src="${displayMedia}" class="w-full h-full object-cover" alt="${displayTitle}"></div><div class="w-full p-6 md:p-8 flex flex-col flex-grow bg-white">${postContentHTML}</div></div>`;
             }
 
             modal.classList.remove('hidden'); modal.classList.add('flex'); void modal.offsetWidth; 
