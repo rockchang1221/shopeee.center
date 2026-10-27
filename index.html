@@ -13,13 +13,32 @@
         ::-webkit-scrollbar { display: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 進場動畫 (下滑淡入) */
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-down {
+            animation: slideDown 0.2s ease-out forwards;
+        }
+
+        /* 退場動畫 (上滑淡出) */
+        @keyframes slideUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.2s ease-in forwards;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen selection:bg-neutral-900 selection:text-white">
 
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
-        <div class="w-full px-6 lg:px-12 h-20 flex justify-between items-center gap-4">
-            <a href="#" class="shrink-0 flex items-center h-10">
+        <!-- 🚀 統一並縮小 Header 左右邊界 (px-3 md:px-5 xl:px-8) -->
+        <div class="w-full px-3 md:px-5 xl:px-8 h-20 flex justify-between items-center gap-4">
+            <a href="#" class="shrink-0 flex items-center h-6">
                 <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
             </a>
             
@@ -32,26 +51,27 @@
                     <button id="mobileSearchBtn" class="p-2 text-neutral-900 focus:outline-none">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                     </button>
-                    <button id="mobileMenuBtn" class="p-2 text-neutral-900 focus:outline-none relative w-6 h-6">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full stroke-current stroke-2"><path d="M4 6H16" stroke-linecap="round"/><path d="M4 12H12" stroke-linecap="round"/><path d="M4 18H20" stroke-linecap="round"/></svg>
+                    <button id="mobileMenuBtn" class="p-2 text-neutral-900 focus:outline-none">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current stroke-2"><path d="M4 6H16" stroke-linecap="round"/><path d="M4 12H12" stroke-linecap="round"/><path d="M4 18H20" stroke-linecap="round"/></svg>
                     </button>
                 </div>
-            </div>
-        </div>
-        <div id="mobileSearchDropdown" class="hidden md:hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg px-6 py-4">
+        <!-- 🚀 手機版搜尋框下拉邊界對齊 -->
+        <div id="mobileSearchDropdown" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg px-3 md:px-5 py-4">
             <div class="relative w-full group">
                 <input type="text" id="mobileSearchInput" onkeyup="handleSearch(event, this.value)" placeholder="搜尋好物..." class="w-full border-2 border-neutral-100 rounded-lg text-sm py-2.5 pl-4 pr-10 focus:outline-none focus:border-neutral-900 text-neutral-900 font-medium">
             </div>
         </div>
-        <div id="mobileMenu" class="hidden md:hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg z-50">
-            <nav class="flex flex-col px-6 py-4 gap-4">
+        <!-- 🚀 手機版選單邊界對齊 -->
+        <div id="mobileMenu" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg z-50">
+            <nav class="flex flex-col px-3 md:px-5 py-4 gap-4">
                 <a href="#" class="text-base font-bold text-neutral-900">精選好物</a>
                 <a href="./disclaimer.pdf" target="_blank" class="text-base font-bold text-neutral-400">使用者須知</a>
             </nav>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 md:px-6 w-full pb-32">
+    <!-- 🚀 統一並縮小商品區塊的左右邊界 (px-3 md:px-5)，讓卡片撐得更大 -->
+    <main class="flex-grow max-w-7xl mx-auto px-3 md:px-5 w-full pb-32">
         <div class="w-full pt-8 pb-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-neutral-100">
             <div class="flex items-center gap-6 shrink-0">
                 <span class="text-sm font-black text-neutral-900 cursor-pointer">熱度最高</span>
@@ -62,8 +82,8 @@
             </div>
         </div>
 
-        <!-- 🚀 網格排版調整：手機 2 格 (grid-cols-2)、平板 4 格 (md:grid-cols-4)、電腦 6 格 (lg:grid-cols-6) -->
-        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-12">
+        <!-- 🚀 縮小間距：gap-x-2 (手機) / gap-x-4 (電腦) 讓卡片稍微變大 -->
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2 gap-y-6 md:gap-x-4 md:gap-y-10">
             <div class="col-span-full flex flex-col items-center justify-center py-16">
                 <div class="w-8 h-8 border-4 border-neutral-200 border-t-neutral-900 rounded-full animate-spin mb-4"></div>
                 <p class="text-neutral-500 font-medium text-sm">載入中...</p>
@@ -76,7 +96,6 @@
     </div>
 
     <script>
-        // 🚀 CSV 與 GAS 網址已燒錄
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQGHKBfq5lf7E6AEp4yarLpPqhvUzE3rXHMPJY7bU2-h2LwIQLk3CDAx8l6kv95aG-HyCL332bSBBQX/pub?gid=0&single=true&output=csv';
         const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw21ICqg7RSgUJswjKjSWguDwNosJ7lned_UO61EKHiDY452D_0fqGZbRaiAhcTiUrj0Q/exec';
 
@@ -137,25 +156,22 @@
                 
                 const cardHTML = `
                     <article class="flex flex-col h-full group bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer" onclick="trackClick('${product.id}'); window.open('${product.link}', '_blank');">
-                        
-                        <div class="w-full aspect-[3/2] bg-neutral-50 overflow-hidden relative border-b border-neutral-100">
+                        <!-- 🚀 改為 4:3 比例 -->
+                        <div class="w-full aspect-[4/3] bg-neutral-50 overflow-hidden relative border-b border-neutral-100">
                             <img src="${product.media}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             ${videoIconHTML}
                         </div>
                         
                         <div class="p-3 md:p-4 flex flex-col flex-grow">
-                            <h2 class="text-sm md:text-base font-bold text-neutral-900 line-clamp-2 mb-3 flex-grow">${product.title}</h2>
+                            <h2 class="text-sm md:text-base font-bold text-neutral-900 line-clamp-1 mb-3 flex-grow" title="${product.title}">${product.title}</h2>
                             
-                            <!-- 🚀 修改點：改用 items-center 確保按鈕跟文字在同一條水平中心線上 -->
                             <div class="flex justify-between items-center mt-auto pt-1">
-                                <!-- 左下角：資訊 Icon -->
                                 <button onclick="event.stopPropagation(); openModal('${product.id}')" class="text-neutral-400 hover:text-neutral-900 transition-colors p-1 -ml-1 z-10 flex items-center justify-center" title="查看商品介紹">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
                                       <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                     </svg>
                                 </button>
                                 
-                                <!-- 右下角：蝦皮傳送門 -->
                                 <div class="text-xs md:text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors flex items-center gap-1">
                                     蝦皮傳送門
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform">
@@ -224,14 +240,38 @@
         }
 
         function handleBackdropClick(event) { if (event.target === modal) closeModal(); }
-        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-            document.getElementById('mobileSearchDropdown').classList.add('hidden');
-        });
-        document.getElementById('mobileSearchBtn').addEventListener('click', () => {
-            document.getElementById('mobileSearchDropdown').classList.toggle('hidden');
-            document.getElementById('mobileMenu').classList.add('hidden');
-        });
+
+        // 🚀 新增：選單動態開關邏輯 (加入退場延遲)
+        function toggleDropdown(targetId) {
+            const target = document.getElementById(targetId);
+            const other = targetId === 'mobileMenu' ? document.getElementById('mobileSearchDropdown') : document.getElementById('mobileMenu');
+
+            // 如果另一個選單開著，先把它關掉 (播放退場動畫)
+            if (!other.classList.contains('hidden')) {
+                other.classList.remove('animate-slide-down');
+                other.classList.add('animate-slide-up');
+                setTimeout(() => {
+                    other.classList.add('hidden');
+                    other.classList.remove('animate-slide-up');
+                }, 200);
+            }
+
+            // 處理目標選單
+            if (target.classList.contains('hidden')) {
+                target.classList.remove('hidden', 'animate-slide-up');
+                target.classList.add('animate-slide-down');
+            } else {
+                target.classList.remove('animate-slide-down');
+                target.classList.add('animate-slide-up');
+                setTimeout(() => {
+                    target.classList.add('hidden');
+                    target.classList.remove('animate-slide-up');
+                }, 200);
+            }
+        }
+
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => toggleDropdown('mobileMenu'));
+        document.getElementById('mobileSearchBtn').addEventListener('click', () => toggleDropdown('mobileSearchDropdown'));
     </script>
 </body>
 </html>
