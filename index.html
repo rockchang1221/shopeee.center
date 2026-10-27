@@ -31,13 +31,35 @@
         .animate-slide-up {
             animation: slideUp 0.2s ease-in forwards;
         }
+
+        /* 🚀 升級版骨架屏 (明顯淺灰底 + 高光掃描) */
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .skeleton-bg {
+            background-color: #f3f4f6; /* 明顯的淺灰色 */
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-bg::after {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shimmer 1.5s infinite;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen selection:bg-neutral-900 selection:text-white">
 
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
-        <!-- 🚀 統一並縮小 Header 左右邊界 (px-3 md:px-5 xl:px-8) -->
-        <div class="w-full px-3 md:px-5 xl:px-8 h-20 flex justify-between items-center gap-4">
+        <div class="w-full px-3 md:px-5 mx-auto max-w-7xl h-20 flex justify-between items-center gap-4">
             <a href="#" class="shrink-0 flex items-center h-6">
                 <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
             </a>
@@ -48,29 +70,28 @@
                     <a href="./disclaimer.pdf" target="_blank" class="text-sm font-bold text-neutral-400 hover:text-neutral-900 transition-colors">使用者須知</a>
                 </nav>
                 <div class="flex items-center gap-2 md:hidden">
-                    <button id="mobileSearchBtn" class="p-2 text-neutral-900 focus:outline-none">
+                    <button id="mobileSearchBtn" class="p-2 text-neutral-900 focus:outline-none flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                     </button>
-                    <button id="mobileMenuBtn" class="p-2 text-neutral-900 focus:outline-none">
+                    <button id="mobileMenuBtn" class="p-2 text-neutral-900 focus:outline-none flex items-center justify-center">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current stroke-2"><path d="M4 6H16" stroke-linecap="round"/><path d="M4 12H12" stroke-linecap="round"/><path d="M4 18H20" stroke-linecap="round"/></svg>
                     </button>
                 </div>
-        <!-- 🚀 手機版搜尋框下拉邊界對齊 -->
-        <div id="mobileSearchDropdown" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg px-3 md:px-5 py-4">
-            <div class="relative w-full group">
+            </div>
+        </div>
+        <div id="mobileSearchDropdown" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg px-3 md:px-5 py-4 z-50">
+            <div class="relative w-full group max-w-7xl mx-auto">
                 <input type="text" id="mobileSearchInput" onkeyup="handleSearch(event, this.value)" placeholder="搜尋好物..." class="w-full border-2 border-neutral-100 rounded-lg text-sm py-2.5 pl-4 pr-10 focus:outline-none focus:border-neutral-900 text-neutral-900 font-medium">
             </div>
         </div>
-        <!-- 🚀 手機版選單邊界對齊 -->
         <div id="mobileMenu" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg z-50">
-            <nav class="flex flex-col px-3 md:px-5 py-4 gap-4">
+            <nav class="flex flex-col px-3 md:px-5 py-4 gap-4 max-w-7xl mx-auto">
                 <a href="#" class="text-base font-bold text-neutral-900">精選好物</a>
                 <a href="./disclaimer.pdf" target="_blank" class="text-base font-bold text-neutral-400">使用者須知</a>
             </nav>
         </div>
     </header>
 
-    <!-- 🚀 統一並縮小商品區塊的左右邊界 (px-3 md:px-5)，讓卡片撐得更大 -->
     <main class="flex-grow max-w-7xl mx-auto px-3 md:px-5 w-full pb-32">
         <div class="w-full pt-8 pb-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-neutral-100">
             <div class="flex items-center gap-6 shrink-0">
@@ -82,19 +103,26 @@
             </div>
         </div>
 
-        <!-- 🚀 縮小間距：gap-x-2 (手機) / gap-x-4 (電腦) 讓卡片稍微變大 -->
-        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2 gap-y-6 md:gap-x-4 md:gap-y-10">
-            <!-- 🚀 骨架屏 Skeleton Loading -->
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2 gap-y-6 md:gap-x-4 md:gap-y-8">
+            <!-- 🚀 完美還原結構的圓角骨架屏 (已拿掉分割線) -->
             <script>
-                // 用 JS 快速生成 12 張假卡片填滿畫面，一旦真實資料載入，就會自動覆蓋掉
                 document.write(Array(12).fill(`
                     <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
-                        <div class="w-full aspect-[4/3] skeleton-shimmer border-b border-neutral-100"></div>
-                        <div class="p-3 md:p-4 flex flex-col flex-grow">
-                            <div class="h-4 md:h-5 w-4/5 skeleton-shimmer rounded mb-3 mt-0.5"></div>
-                            <div class="flex justify-between items-center mt-auto pt-1">
-                                <div class="h-5 w-5 md:h-6 md:w-6 skeleton-shimmer rounded-full"></div>
-                                <div class="h-4 md:h-5 w-20 skeleton-shimmer rounded"></div>
+                        <!-- 圖片區塊骨架 -->
+                        <div class="w-full aspect-[4/3] skeleton-bg border-b border-neutral-100"></div>
+                        
+                        <!-- 標題區塊骨架 -->
+                        <div class="p-3 md:p-4 flex-grow flex items-center">
+                            <div class="h-4 w-2/3 skeleton-bg rounded-md"></div>
+                        </div>
+                        
+                        <!-- 底部按鈕區塊骨架 (無分割線) -->
+                        <div class="mt-auto flex items-stretch border-t border-neutral-100 h-[46px] shrink-0">
+                            <div class="w-[50px] shrink-0 flex items-center justify-center">
+                                <div class="w-5 h-5 skeleton-bg rounded-full"></div>
+                            </div>
+                            <div class="flex-1 flex items-center justify-center">
+                                <div class="h-4 w-24 skeleton-bg rounded-md"></div>
                             </div>
                         </div>
                     </article>
@@ -108,6 +136,7 @@
     </div>
 
     <script>
+        // 你的專屬資料庫與追蹤網址
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQGHKBfq5lf7E6AEp4yarLpPqhvUzE3rXHMPJY7bU2-h2LwIQLk3CDAx8l6kv95aG-HyCL332bSBBQX/pub?gid=0&single=true&output=csv';
         const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw21ICqg7RSgUJswjKjSWguDwNosJ7lned_UO61EKHiDY452D_0fqGZbRaiAhcTiUrj0Q/exec';
 
@@ -166,30 +195,36 @@
             dataToRender.forEach(product => {
                 const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 drop-shadow-md"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
                 
+                // 破圖保護機制
+                const fallbackImg = "this.onerror=null; this.src='https://placehold.co/800x600/f3f4f6/a3a3a3?text=Image+Not+Found';";
+
                 const cardHTML = `
                     <article class="flex flex-col h-full group bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer" onclick="trackClick('${product.id}'); window.open('${product.link}', '_blank');">
-                        <!-- 🚀 改為 4:3 比例 -->
-                        <div class="w-full aspect-[4/3] bg-neutral-50 overflow-hidden relative border-b border-neutral-100">
-                            <img src="${product.media}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        
+                        <div class="w-full aspect-[4/3] bg-neutral-50 overflow-hidden relative border-b border-neutral-100 shrink-0">
+                            <img src="${product.media}" alt="${product.title}" onerror="${fallbackImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             ${videoIconHTML}
                         </div>
                         
-                        <div class="p-3 md:p-4 flex flex-col flex-grow">
-                            <h2 class="text-sm md:text-base font-bold text-neutral-900 line-clamp-1 mb-3 flex-grow" title="${product.title}">${product.title}</h2>
+                        <div class="p-3 md:p-4 flex-grow flex items-center">
+                            <h2 class="text-sm font-medium text-neutral-900 line-clamp-1" title="${product.title}">${product.title}</h2>
+                        </div>
+                        
+                        <!-- 底部按鈕區塊 (無任何分割線) -->
+                        <div class="mt-auto flex items-stretch h-[46px] relative shrink-0">
+                            <!-- 資訊 Icon -->
+                            <button onclick="event.stopPropagation(); openModal('${product.id}')" class="w-[50px] shrink-0 flex items-center justify-center text-neutral-400 hover:text-neutral-900 hover:bg-neutral-50 transition-colors z-10" title="查看商品介紹">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                </svg>
+                            </button>
                             
-                            <div class="flex justify-between items-center mt-auto pt-1">
-                                <button onclick="event.stopPropagation(); openModal('${product.id}')" class="text-neutral-400 hover:text-neutral-900 transition-colors p-1 -ml-1 z-10 flex items-center justify-center" title="查看商品介紹">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                    </svg>
-                                </button>
-                                
-                                <div class="text-xs md:text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors flex items-center gap-1">
-                                    蝦皮傳送門
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                    </svg>
-                                </div>
+                            <!-- 蝦皮傳送門 -->
+                            <div class="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors">
+                                蝦皮傳送門
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                </svg>
                             </div>
                         </div>
                     </article>
@@ -253,12 +288,10 @@
 
         function handleBackdropClick(event) { if (event.target === modal) closeModal(); }
 
-        // 🚀 新增：選單動態開關邏輯 (加入退場延遲)
         function toggleDropdown(targetId) {
             const target = document.getElementById(targetId);
             const other = targetId === 'mobileMenu' ? document.getElementById('mobileSearchDropdown') : document.getElementById('mobileMenu');
 
-            // 如果另一個選單開著，先把它關掉 (播放退場動畫)
             if (!other.classList.contains('hidden')) {
                 other.classList.remove('animate-slide-down');
                 other.classList.add('animate-slide-up');
@@ -268,7 +301,6 @@
                 }, 200);
             }
 
-            // 處理目標選單
             if (target.classList.contains('hidden')) {
                 target.classList.remove('hidden', 'animate-slide-up');
                 target.classList.add('animate-slide-down');
