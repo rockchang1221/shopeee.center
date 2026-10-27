@@ -19,25 +19,21 @@
             0% { opacity: 0; transform: translateY(-10px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        .animate-slide-down {
-            animation: slideDown 0.2s ease-out forwards;
-        }
+        .animate-slide-down { animation: slideDown 0.2s ease-out forwards; }
 
         /* 退場動畫 (上滑淡出) */
         @keyframes slideUp {
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-10px); }
         }
-        .animate-slide-up {
-            animation: slideUp 0.2s ease-in forwards;
-        }
+        .animate-slide-up { animation: slideUp 0.2s ease-in forwards; }
 
-        /* 🚀 升級版骨架屏 (明顯淺灰底 + 高光掃描) */
+        /* 骨架屏高級掃光 */
         @keyframes shimmer {
             100% { transform: translateX(100%); }
         }
         .skeleton-bg {
-            background-color: #f3f4f6; /* 明顯的淺灰色 */
+            background-color: #f3f4f6; 
             position: relative;
             overflow: hidden;
         }
@@ -46,44 +42,47 @@
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
             transform: translateX(-100%);
-            background-image: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0,
-                rgba(255, 255, 255, 0.6) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
+            background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
             animation: shimmer 1.5s infinite;
         }
     </style>
 </head>
 <body class="flex flex-col min-h-screen selection:bg-neutral-900 selection:text-white">
 
+    <!-- Header：平板與手機共用收納佈局 -->
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
         <div class="w-full px-3 md:px-5 mx-auto max-w-7xl h-20 flex justify-between items-center gap-4">
             <a href="#" class="shrink-0 flex items-center h-6">
+                <!-- 確保 Logo 在最左邊，高度精準控制 -->
                 <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
             </a>
             
             <div class="flex items-center gap-4">
-                <nav class="hidden md:flex gap-6">
+                <nav class="hidden xl:flex gap-6">
                     <a href="#" class="text-sm font-bold text-neutral-900 hover:text-neutral-600 transition-colors">精選好物</a>
                     <a href="./disclaimer.pdf" target="_blank" class="text-sm font-bold text-neutral-400 hover:text-neutral-900 transition-colors">使用者須知</a>
                 </nav>
-                <div class="flex items-center gap-2 md:hidden">
+                <!-- 平板與手機 (xl以下) 顯示的搜尋與漢堡選單 -->
+                <div class="flex items-center gap-2 xl:hidden">
                     <button id="mobileSearchBtn" class="p-2 text-neutral-900 focus:outline-none flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                     </button>
-                    <button id="mobileMenuBtn" class="p-2 text-neutral-900 focus:outline-none flex items-center justify-center">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current stroke-2"><path d="M4 6H16" stroke-linecap="round"/><path d="M4 12H12" stroke-linecap="round"/><path d="M4 18H20" stroke-linecap="round"/></svg>
+                    <button id="mobileMenuBtn" class="p-2 w-10 h-10 text-neutral-900 focus:outline-none flex flex-col items-end justify-center gap-[5px] relative">
+                        <span id="ham-bar1" class="w-[18px] h-[2px] bg-current rounded-full transform transition-all duration-300 origin-center"></span>
+                        <span id="ham-bar2" class="w-[14px] h-[2px] bg-current rounded-full transition-all duration-300"></span>
+                        <span id="ham-bar3" class="w-[22px] h-[2px] bg-current rounded-full transform transition-all duration-300 origin-center"></span>
                     </button>
                 </div>
             </div>
         </div>
+        
+        <!-- 下滑搜尋框 -->
         <div id="mobileSearchDropdown" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg px-3 md:px-5 py-4 z-50">
             <div class="relative w-full group max-w-7xl mx-auto">
                 <input type="text" id="mobileSearchInput" onkeyup="handleSearch(event, this.value)" placeholder="搜尋好物..." class="w-full border-2 border-neutral-100 rounded-lg text-sm py-2.5 pl-4 pr-10 focus:outline-none focus:border-neutral-900 text-neutral-900 font-medium">
             </div>
         </div>
+        <!-- 下滑選單 -->
         <div id="mobileMenu" class="hidden absolute top-full left-0 w-full bg-white border-b border-neutral-100 shadow-lg z-50">
             <nav class="flex flex-col px-3 md:px-5 py-4 gap-4 max-w-7xl mx-auto">
                 <a href="#" class="text-base font-bold text-neutral-900">精選好物</a>
@@ -92,59 +91,104 @@
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto px-3 md:px-5 w-full pb-32">
-        <div class="w-full pt-8 pb-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-neutral-100">
-            <div class="flex items-center gap-6 shrink-0">
-                <span class="text-sm font-black text-neutral-900 cursor-pointer">熱度最高</span>
-                <span class="text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors">最近更新</span>
+    <!-- 內容大容器 -->
+    <div class="max-w-7xl mx-auto px-3 md:px-5 w-full pt-6 xl:pt-8 pb-32 flex flex-col">
+        
+        <!-- 第一列：獨立的控制列 (電腦版 Sorting & Search) -->
+        <div class="hidden xl:flex w-full pb-6 mb-6 justify-between items-center border-b border-neutral-100 shrink-0">
+            <div class="flex items-center gap-6 shrink-0" id="desktopSortContainer">
+                <span id="sortBtn-clicks-desktop" onclick="setSort('clicks')" class="text-sm font-black text-neutral-900 cursor-pointer">熱度最高</span>
+                <span id="sortBtn-date-desktop" onclick="setSort('date')" class="text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors">最近更新</span>
             </div>
-            <div class="hidden md:block w-80 relative group shrink-0">
+            <div class="w-72 relative group shrink-0">
                 <input type="text" id="desktopSearchInput" onkeyup="handleSearch(event, this.value)" placeholder="搜尋好物..." class="w-full border-2 border-neutral-100 rounded-lg text-sm py-2.5 pl-4 pr-10 focus:outline-none focus:border-neutral-900 text-neutral-900 font-medium">
             </div>
         </div>
 
-        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2 gap-y-6 md:gap-x-4 md:gap-y-8">
-            <!-- 🚀 完美還原結構的圓角骨架屏 (已拿掉分割線) -->
-            <script>
-                document.write(Array(12).fill(`
-                    <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
-                        <!-- 圖片區塊骨架 -->
-                        <div class="w-full aspect-[4/3] skeleton-bg border-b border-neutral-100"></div>
-                        
-                        <!-- 標題區塊骨架 -->
-                        <div class="p-3 md:p-4 flex-grow flex items-center">
-                            <div class="h-4 w-2/3 skeleton-bg rounded-md"></div>
-                        </div>
-                        
-                        <!-- 底部按鈕區塊骨架 (無分割線) -->
-                        <div class="mt-auto flex items-stretch border-t border-neutral-100 h-[46px] shrink-0">
-                            <div class="w-[50px] shrink-0 flex items-center justify-center">
-                                <div class="w-5 h-5 skeleton-bg rounded-full"></div>
-                            </div>
-                            <div class="flex-1 flex items-center justify-center">
-                                <div class="h-4 w-24 skeleton-bg rounded-md"></div>
-                            </div>
-                        </div>
-                    </article>
-                `).join(''));
-            </script>
+        <!-- 手機/平板版：控制列 (排序圖示 + 橫向分類膠囊) -->
+        <div class="flex xl:hidden items-center gap-3 pb-4 mb-6 border-b border-neutral-100 relative shrink-0">
+            <div class="relative shrink-0">
+                <button id="mobileSortToggle" onclick="toggleMobileSortMenu()" class="flex items-center justify-center w-9 h-9 border-2 border-neutral-100 bg-white rounded-full text-neutral-600 hover:text-neutral-900 hover:border-neutral-900 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg>
+                </button>
+                <div id="mobileSortMenu" class="hidden absolute top-full left-0 mt-2 w-32 bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-neutral-100 z-30 py-1 overflow-hidden transition-all origin-top-left">
+                    <button id="sortBtn-clicks-mobile" onclick="setSort('clicks')" class="w-full text-left px-4 py-2.5 text-sm font-black text-neutral-900 bg-neutral-50 hover:bg-neutral-100">熱度最高</button>
+                    <button id="sortBtn-date-mobile" onclick="setSort('date')" class="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50">最近更新</button>
+                </div>
+            </div>
+            <div class="w-px h-6 bg-neutral-200 shrink-0 mx-1"></div>
+            <div id="mobileCategoryList" class="flex overflow-x-auto no-scrollbar gap-2 flex-grow items-center">
+                <!-- JS 動態插入 Pill 按鈕 -->
+            </div>
         </div>
-    </main>
 
+        <!-- 第二列：左側分類篩選 + 右側商品卡片 -->
+        <div class="flex flex-col xl:flex-row gap-8 w-full">
+            
+            <!-- 左側邊欄：電腦版 (xl以上) 顯示的分類篩選工具 -->
+            <!-- 注意：因為上面的控制列已經獨立了，所以這裡的頂部會跟右邊的卡片完美水平切齊！ -->
+            <aside class="hidden xl:block w-52 shrink-0">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-neutral-900">分類篩選</h3>
+                    <button onclick="clearCategories()" class="text-xs font-medium text-neutral-400 hover:text-neutral-900 transition-colors">全部清除</button>
+                </div>
+                <div id="desktopCategoryList" class="flex flex-col gap-3.5">
+                    <!-- JS 動態插入 Checkbox 列表 -->
+                </div>
+            </aside>
+
+            <!-- 右側主要內容區 (商品網格) -->
+            <!-- 已經調整為：手機 2格、平板 3格、電腦 4格 (讓卡片變大) -->
+            <main class="flex-1 min-w-0">
+                <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
+                    <!-- 初次載入的 12 張骨架屏，無縫極簡設計 -->
+                    <script>
+                        document.write(Array(12).fill(`
+                            <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
+                                <div class="w-full aspect-[4/3] skeleton-bg"></div>
+                                <div class="p-3 md:p-4 flex-grow flex items-center">
+                                    <div class="h-4 w-2/3 skeleton-bg rounded-md"></div>
+                                </div>
+                                <div class="mt-auto flex items-stretch h-[46px] shrink-0">
+                                    <div class="w-[50px] shrink-0 flex items-center justify-center">
+                                        <div class="w-5 h-5 skeleton-bg rounded-full"></div>
+                                    </div>
+                                    <!-- 骨架屏的傳送門也靠右對齊 -->
+                                    <div class="flex-1 flex items-center justify-end pr-3">
+                                        <div class="h-4 w-24 skeleton-bg rounded-md"></div>
+                                    </div>
+                                </div>
+                            </article>
+                        `).join(''));
+                    </script>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 商品詳細介紹彈出視窗 (Modal) -->
     <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none" onclick="handleBackdropClick(event)">
         <div id="modalContent" class="relative bg-white rounded-xl shadow-2xl overflow-hidden w-full transition-transform duration-300 scale-95 flex"></div>
     </div>
 
     <script>
-        // 你的專屬資料庫與追蹤網址
+        // 核心資料庫與 API 連結
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQGHKBfq5lf7E6AEp4yarLpPqhvUzE3rXHMPJY7bU2-h2LwIQLk3CDAx8l6kv95aG-HyCL332bSBBQX/pub?gid=0&single=true&output=csv';
         const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw21ICqg7RSgUJswjKjSWguDwNosJ7lned_UO61EKHiDY452D_0fqGZbRaiAhcTiUrj0Q/exec';
 
+        // 狀態管理
         let products = [];
+        let allCategories = [];
+        let activeCategories = new Set();
+        let currentSearchQuery = "";
+        let currentSortMode = "clicks"; // 'clicks' 或 'date'
+        let filterTimeout; // 用來控制 0.4 秒虛擬延遲的計時器
+
         const productGrid = document.getElementById('productGrid');
         const modal = document.getElementById('productModal');
         const modalContent = document.getElementById('modalContent');
 
+        // 啟動：抓取資料
         async function fetchProducts() {
             try {
                 const response = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -153,55 +197,191 @@
                 Papa.parse(csvText, {
                     header: true,
                     skipEmptyLines: true,
-                    transformHeader: function(header) {
-                        return header.toLowerCase().trim();
-                    },
+                    transformHeader: function(header) { return header.toLowerCase().trim(); },
                     complete: function(results) {
-                        products = results.data.map(row => ({
+                        products = results.data.map((row, index) => ({
                             id: row.id,
                             type: row.type,
                             media: row.media,
                             title: row.title,
-                            categories: row.categories ? row.categories.split(',').map(c => c.trim()) : [],
+                            categories: row.categories ? row.categories.split(',').map(c => c.trim()).filter(c => c) : [],
                             rating: parseFloat(row.rating) || 0,
                             text: row.text,
                             link: row.link,
                             clicks: parseInt(row.clicks) || 0,
-                            rawIframe: row.rawIframe || ''
+                            rawIframe: row.rawIframe || '',
+                            originalIndex: index
                         }));
 
-                        const sortedProducts = [...products].sort((a, b) => {
-                            if (b.clicks !== a.clicks) return b.clicks - a.clicks;
-                            if (b.rating !== a.rating) return b.rating - a.rating;
-                            return Math.random() - 0.5;
-                        });
-
-                        renderCards(sortedProducts);
+                        extractCategories();
+                        applyFiltersAndRender();
                     }
                 });
             } catch (error) {
                 console.error("讀取失敗:", error);
-                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-neutral-500">載入失敗。</div>';
+                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-neutral-500">載入資料庫失敗，請稍後再試。</div>';
             }
         }
 
+        // 萃取分類並繪製選單
+        function extractCategories() {
+            const catSet = new Set();
+            products.forEach(p => p.categories.forEach(c => catSet.add(c)));
+            allCategories = Array.from(catSet);
+            renderCategoryMenus();
+        }
+
+        // 繪製 左側 Checkbox 與 橫向 Pill
+        function renderCategoryMenus() {
+            const dList = document.getElementById('desktopCategoryList');
+            const mList = document.getElementById('mobileCategoryList');
+            dList.innerHTML = ''; mList.innerHTML = '';
+
+            allCategories.forEach(cat => {
+                const isChecked = activeCategories.has(cat);
+                
+                // 電腦版 Checkbox 設計
+                dList.insertAdjacentHTML('beforeend', `
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <div class="relative flex items-center justify-center w-[18px] h-[18px] rounded-[3px] border ${isChecked ? 'border-neutral-900 bg-neutral-900' : 'border-neutral-300 bg-white group-hover:border-neutral-500'} transition-colors">
+                            ${isChecked ? `<svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>` : ''}
+                        </div>
+                        <span class="text-sm ${isChecked ? 'font-bold text-neutral-900' : 'font-medium text-neutral-600 group-hover:text-neutral-900'} transition-colors">${cat}</span>
+                        <input type="checkbox" class="hidden" value="${cat}" onchange="toggleCategory('${cat}')" ${isChecked ? 'checked' : ''}>
+                    </label>
+                `);
+
+                // 平板/手機版 膠囊標籤
+                mList.insertAdjacentHTML('beforeend', `
+                    <button onclick="toggleCategory('${cat}')" class="shrink-0 px-4 py-1.5 rounded-full text-sm transition-colors border ${isChecked ? 'bg-neutral-900 text-white border-neutral-900 font-bold' : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50 font-medium'}">
+                        ${cat}
+                    </button>
+                `);
+            });
+        }
+
+        // 切換單一分類
+        function toggleCategory(cat) {
+            if (activeCategories.has(cat)) activeCategories.delete(cat);
+            else activeCategories.add(cat);
+            
+            renderCategoryMenus();
+            applyFiltersAndRender();
+        }
+
+        // 清除所有分類
+        function clearCategories() {
+            activeCategories.clear();
+            renderCategoryMenus();
+            applyFiltersAndRender();
+        }
+
+        // 設定排序模式
+        function setSort(mode) {
+            currentSortMode = mode;
+            updateSortUI();
+            applyFiltersAndRender();
+            
+            const sortMenu = document.getElementById('mobileSortMenu');
+            if(!sortMenu.classList.contains('hidden')) toggleMobileSortMenu();
+        }
+
+        // 更新排序按鈕的文字粗細
+        function updateSortUI() {
+            ['clicks', 'date'].forEach(mode => {
+                const isMatch = currentSortMode === mode;
+                const dBtn = document.getElementById(`sortBtn-${mode}-desktop`);
+                if(dBtn) dBtn.className = isMatch ? "text-sm font-black text-neutral-900 cursor-pointer" : "text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors";
+                const mBtn = document.getElementById(`sortBtn-${mode}-mobile`);
+                if(mBtn) mBtn.className = isMatch ? "w-full text-left px-4 py-2.5 text-sm font-black text-neutral-900 bg-neutral-50" : "w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50";
+            });
+        }
+
+        // 處理搜尋列輸入
+        function handleSearch(event, query) {
+            currentSearchQuery = query.toLowerCase().trim();
+            document.getElementById('desktopSearchInput').value = query;
+            document.getElementById('mobileSearchInput').value = query;
+            
+            applyFiltersAndRender();
+        }
+
+        // ==========================================
+        // 核心邏輯：過濾資料並展示「虛擬載入延遲」
+        // ==========================================
+        function applyFiltersAndRender() {
+            // 1. 先計算出過濾後的資料
+            let filtered = products;
+
+            if (currentSearchQuery) {
+                filtered = filtered.filter(p => 
+                    (p.title && p.title.toLowerCase().includes(currentSearchQuery)) || 
+                    (p.text && p.text.toLowerCase().includes(currentSearchQuery))
+                );
+            }
+
+            if (activeCategories.size > 0) {
+                filtered = filtered.filter(p => p.categories.some(c => activeCategories.has(c)));
+            }
+
+            filtered = [...filtered].sort((a, b) => {
+                if (currentSortMode === 'clicks') {
+                    if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+                    return b.rating - a.rating;
+                } else {
+                    return b.originalIndex - a.originalIndex;
+                }
+            });
+
+            // 2. 清空網格，呼叫骨架屏動畫
+            showSkeletons();
+
+            // 3. 虛擬延遲 (0.4秒)：清除前一次計時器，避免狂點
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(() => {
+                // 延遲結束後，渲染真正的卡片
+                renderCards(filtered);
+            }, 400); // 這裡控制延遲時間，400 = 0.4秒
+        }
+
+        // 產生骨架屏的函數 (包含靠右對齊的底部按鈕與無縫底線)
+        function showSkeletons() {
+            productGrid.innerHTML = Array(12).fill(`
+                <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
+                    <div class="w-full aspect-[4/3] skeleton-bg"></div>
+                    <div class="p-3 md:p-4 flex-grow flex items-center">
+                        <div class="h-4 w-2/3 skeleton-bg rounded-md"></div>
+                    </div>
+                    <div class="mt-auto flex items-stretch h-[46px] shrink-0">
+                        <div class="w-[50px] shrink-0 flex items-center justify-center">
+                            <div class="w-5 h-5 skeleton-bg rounded-full"></div>
+                        </div>
+                        <div class="flex-1 flex items-center justify-end pr-3">
+                            <div class="h-4 w-24 skeleton-bg rounded-md"></div>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // 渲染真正的商品卡片
         function renderCards(dataToRender) {
             productGrid.innerHTML = ''; 
             if (dataToRender.length === 0) {
-                productGrid.innerHTML = '<div class="col-span-full text-center py-16 text-neutral-500">找不到商品。</div>';
+                productGrid.innerHTML = '<div class="col-span-full text-center py-20 text-neutral-400 text-sm">找不到符合條件的商品。</div>';
                 return;
             }
 
             dataToRender.forEach(product => {
                 const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 drop-shadow-md"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
-                
-                // 破圖保護機制
+                // 破圖保護機制：如果圖死了，換上灰色的 Image Not Found
                 const fallbackImg = "this.onerror=null; this.src='https://placehold.co/800x600/f3f4f6/a3a3a3?text=Image+Not+Found';";
 
+                // 卡片本身就是陷阱，游標為 pointer，點擊觸發跳轉，Hover時右下角按鈕連動
                 const cardHTML = `
                     <article class="flex flex-col h-full group bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer" onclick="trackClick('${product.id}'); window.open('${product.link}', '_blank');">
                         
-                        <div class="w-full aspect-[4/3] bg-neutral-50 overflow-hidden relative border-b border-neutral-100 shrink-0">
+                        <div class="w-full aspect-[4/3] bg-neutral-50 overflow-hidden relative shrink-0">
                             <img src="${product.media}" alt="${product.title}" onerror="${fallbackImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             ${videoIconHTML}
                         </div>
@@ -210,17 +390,17 @@
                             <h2 class="text-sm font-medium text-neutral-900 line-clamp-1" title="${product.title}">${product.title}</h2>
                         </div>
                         
-                        <!-- 底部按鈕區塊 (無任何分割線) -->
+                        <!-- 底部區域 (純粹留白，無分割線) -->
                         <div class="mt-auto flex items-stretch h-[46px] relative shrink-0">
-                            <!-- 資訊 Icon -->
-                            <button onclick="event.stopPropagation(); openModal('${product.id}')" class="w-[50px] shrink-0 flex items-center justify-center text-neutral-400 hover:text-neutral-900 hover:bg-neutral-50 transition-colors z-10" title="查看商品介紹">
+                            <!-- 資訊 Icon (阻擋冒泡，點擊不會跳轉蝦皮，只開介紹) -->
+                            <button onclick="event.stopPropagation(); openModal('${product.id}')" class="w-[50px] shrink-0 flex items-center justify-center text-neutral-400 hover:text-neutral-900 transition-colors z-10" title="查看商品介紹">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                 </svg>
                             </button>
                             
-                            <!-- 蝦皮傳送門 -->
-                            <div class="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors">
+                            <!-- 蝦皮傳送門 (精準靠右對齊 justify-end pr-3) -->
+                            <div class="flex-1 flex items-center justify-end pr-3 gap-1.5 text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors">
                                 蝦皮傳送門
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
@@ -233,22 +413,75 @@
             });
         }
 
+        // 發送點擊訊號給 GAS
         function trackClick(productId) {
             fetch(`${GAS_WEBHOOK_URL}?id=${productId}`, { mode: 'no-cors' }).catch(console.error);
         }
 
-        fetchProducts();
+        // 手機版下拉選單通用邏輯 (含退場動畫與漢堡形變動畫)
+        function toggleDropdown(targetId) {
+            const target = document.getElementById(targetId);
+            const otherId = targetId === 'mobileMenu' ? 'mobileSearchDropdown' : 'mobileMenu';
+            const other = document.getElementById(otherId);
+            
+            // 抓取漢堡選單的三條線
+            const bar1 = document.getElementById('ham-bar1');
+            const bar2 = document.getElementById('ham-bar2');
+            const bar3 = document.getElementById('ham-bar3');
 
-        function handleSearch(event, query) {
-            if (!query || !query.trim()) return renderCards(products);
-            const lowerQuery = query.toLowerCase().trim();
-            const filteredProducts = products.filter(p => 
-                (p.title && p.title.toLowerCase().includes(lowerQuery)) || 
-                (p.text && p.text.toLowerCase().includes(lowerQuery))
-            );
-            renderCards(filteredProducts);
+            // 負責處理漢堡變成叉叉的動畫邏輯
+            const updateHamIcon = (isOpen) => {
+                if (!bar1 || !bar2 || !bar3) return; // 安全保護：如果找不到線，就終止動畫，防止當機
+                if (isOpen) {
+                    bar1.classList.remove('w-[18px]');
+                    bar1.classList.add('w-[22px]', 'translate-y-[7px]', 'rotate-45');
+                    bar2.classList.add('opacity-0');
+                    bar3.classList.add('-translate-y-[7px]', '-rotate-45');
+                } else {
+                    bar1.classList.remove('w-[22px]', 'translate-y-[7px]', 'rotate-45');
+                    bar1.classList.add('w-[18px]');
+                    bar2.classList.remove('opacity-0');
+                    bar3.classList.remove('-translate-y-[7px]', '-rotate-45');
+                }
+            };
+
+            // 如果另一個選單正開著，先關掉它
+            if (!other.classList.contains('hidden')) {
+                other.classList.remove('animate-slide-down');
+                other.classList.add('animate-slide-up');
+                if (otherId === 'mobileMenu') updateHamIcon(false); // 若被迫關閉選單，叉叉轉回漢堡
+                setTimeout(() => { other.classList.add('hidden'); other.classList.remove('animate-slide-up'); }, 200);
+            }
+
+            // 切換目標選單
+            if (target.classList.contains('hidden')) {
+                target.classList.remove('hidden', 'animate-slide-up');
+                target.classList.add('animate-slide-down');
+                if (targetId === 'mobileMenu') updateHamIcon(true); // 打開選單，漢堡轉成叉叉
+            } else {
+                target.classList.remove('animate-slide-down');
+                target.classList.add('animate-slide-up');
+                if (targetId === 'mobileMenu') updateHamIcon(false); // 關閉選單，叉叉轉回漢堡
+                setTimeout(() => { target.classList.add('hidden'); target.classList.remove('animate-slide-up'); }, 200);
+            }
+        }
+        
+        function toggleMobileSortMenu() {
+            const menu = document.getElementById('mobileSortMenu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden', 'animate-slide-up');
+                menu.classList.add('animate-slide-down');
+            } else {
+                menu.classList.remove('animate-slide-down');
+                menu.classList.add('animate-slide-up');
+                setTimeout(() => { menu.classList.add('hidden'); menu.classList.remove('animate-slide-up'); }, 200);
+            }
         }
 
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => toggleDropdown('mobileMenu'));
+        document.getElementById('mobileSearchBtn').addEventListener('click', () => toggleDropdown('mobileSearchDropdown'));
+
+        // Modal 邏輯
         function openModal(productId) {
             const data = products.find(p => p.id === productId);
             if (!data) return;
@@ -288,34 +521,8 @@
 
         function handleBackdropClick(event) { if (event.target === modal) closeModal(); }
 
-        function toggleDropdown(targetId) {
-            const target = document.getElementById(targetId);
-            const other = targetId === 'mobileMenu' ? document.getElementById('mobileSearchDropdown') : document.getElementById('mobileMenu');
-
-            if (!other.classList.contains('hidden')) {
-                other.classList.remove('animate-slide-down');
-                other.classList.add('animate-slide-up');
-                setTimeout(() => {
-                    other.classList.add('hidden');
-                    other.classList.remove('animate-slide-up');
-                }, 200);
-            }
-
-            if (target.classList.contains('hidden')) {
-                target.classList.remove('hidden', 'animate-slide-up');
-                target.classList.add('animate-slide-down');
-            } else {
-                target.classList.remove('animate-slide-down');
-                target.classList.add('animate-slide-up');
-                setTimeout(() => {
-                    target.classList.add('hidden');
-                    target.classList.remove('animate-slide-up');
-                }, 200);
-            }
-        }
-
-        document.getElementById('mobileMenuBtn').addEventListener('click', () => toggleDropdown('mobileMenu'));
-        document.getElementById('mobileSearchBtn').addEventListener('click', () => toggleDropdown('mobileSearchDropdown'));
+        // 啟動主程式
+        fetchProducts();
     </script>
 </body>
 </html>
