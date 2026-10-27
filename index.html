@@ -84,10 +84,22 @@
 
         <!-- 🚀 縮小間距：gap-x-2 (手機) / gap-x-4 (電腦) 讓卡片稍微變大 -->
         <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2 gap-y-6 md:gap-x-4 md:gap-y-10">
-            <div class="col-span-full flex flex-col items-center justify-center py-16">
-                <div class="w-8 h-8 border-4 border-neutral-200 border-t-neutral-900 rounded-full animate-spin mb-4"></div>
-                <p class="text-neutral-500 font-medium text-sm">載入中...</p>
-            </div>
+            <!-- 🚀 骨架屏 Skeleton Loading -->
+            <script>
+                // 用 JS 快速生成 12 張假卡片填滿畫面，一旦真實資料載入，就會自動覆蓋掉
+                document.write(Array(12).fill(`
+                    <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
+                        <div class="w-full aspect-[4/3] skeleton-shimmer border-b border-neutral-100"></div>
+                        <div class="p-3 md:p-4 flex flex-col flex-grow">
+                            <div class="h-4 md:h-5 w-4/5 skeleton-shimmer rounded mb-3 mt-0.5"></div>
+                            <div class="flex justify-between items-center mt-auto pt-1">
+                                <div class="h-5 w-5 md:h-6 md:w-6 skeleton-shimmer rounded-full"></div>
+                                <div class="h-4 md:h-5 w-20 skeleton-shimmer rounded"></div>
+                            </div>
+                        </div>
+                    </article>
+                `).join(''));
+            </script>
         </div>
     </main>
 
