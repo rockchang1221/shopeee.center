@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ▼▼▼ 這裡換成你要在社群曝光的固定資訊 ▼▼▼ -->
+    <title>我的專屬好物推薦</title>
+    <meta property="og:title" content="專屬優惠好物推薦">
+    <meta property="og:description" content="點擊查看詳細介紹與最新優惠資訊！">
+    <meta property="og:image" content="https://你的圖片網址.jpg"> 
+    <meta property="og:type" content="website">
+    <!-- ▲▲▲ 這裡換成你要在社群曝光的固定資訊 ▲▲▲ -->
+
+    <script>
+        // 【重要】這裡換成你「發佈試算表為 CSV」的專屬網址
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTo7OsmqFpCf4y8RM_WJVyB_ZCAgTYPAv70CXuW73w0CkKmOHWP418DpBCD9xpZXVIgGmVxE5mj15Hw/pub?gid=0&single=true&output=csv";
+
+        window.onload = async function() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+
+            if (!id) {
+                document.getElementById("message").innerText = "連結無效，請確認網址是否完整。";
+                return;
+            }
+
+            try {
+                // 抓取 CSV 檔案 (速度極快)
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                
+                // 將 CSV 按行分割
+                const lines = csvText.split('\n');
+                let foundUrl = null;
+
+                // 從第2行開始找 (跳過標題列)
+                for (let i = 1; i < lines.length; i++) { 
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // 尋找符合該 ID 的那一行
+                    if (line.startsWith(id + ',')) {
+                        // 擷取逗號後面的內容 (即 URL 部分)
+                        let remainder = line.substring(id.length + 1);
+                        
+                        // 處理由 Google Sheets 匯出時，若網址內含逗號會自動加上雙引號的狀況
+                        if (remainder.startsWith('"')) {
+                            const endQuoteIdx = remainder.indexOf('"', 1);
+                            foundUrl = remainder.substring(1, endQuoteIdx);
+                        } else {
+                            const endCommaIdx = remainder.indexOf(',');
+                            // 如果後面沒有逗號(沒有日期欄位)，就整串拿來用
+                            foundUrl = endCommaIdx === -1 ? remainder : remainder.substring(0, endCommaIdx);
+                        }
+                        break; // 找到了就停止迴圈
+                    }
+                }
+
+                if (foundUrl) {
+                    // 拿到真正的蝦皮分潤網址，立刻跳轉
+                    window.location.replace(foundUrl);
+                } else {
+                    document.getElementById("message").innerText = "找不到這個商品連結喔！";
+                }
+            } catch (error) {
+                document.getElementById("message").innerText = "讀取資料失敗，請稍後再試。";
+            }
+        };
+    </script>
+</head>
+<body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif;">
+    <div style="text-align: center; color: #555;">
+        <svg id="spinner" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-bottom: 10px; display: inline-block;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10"></path>
+        </svg>
+        <p id="message">正在前往專屬優惠頁面...</p>
+    </div>
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>
