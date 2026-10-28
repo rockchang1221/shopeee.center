@@ -58,29 +58,11 @@
             }
 
             if (foundUrl) {
-                // 判斷使用者裝置
-                const ua = navigator.userAgent || navigator.vendor || window.opera;
-                const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-                const isAndroid = /Android/.test(ua);
-                const isInApp = /Instagram|FBAN|FBAV|Threads|Line|MicroMessenger/i.test(ua); // 擴大偵測範圍，包含所有主流社群
-                
-                // 【終極解法】因為 s.shopee.tw 是短網址，直接丟給蝦皮 APP 會導致無法解析而跳回首頁。
-                // 我們必須讓「真正的瀏覽器」去解開短網址，然後再由瀏覽器自動觸發 APP！
-                let appUrl = foundUrl;
+                // 【徹底拔除】所有裝置判斷與意圖 (Intent) 轉換
+                // 直接將抓到的最原始分潤連結，綁定到按鈕上
+                document.getElementById("app-btn").href = foundUrl;
 
-                if (isAndroid) {
-                    // Android：使用 Intent 強制喚醒 Chrome 瀏覽器。
-                    // Chrome 處理短網址後，會完美觸發 Android 系統的 App Link 打開蝦皮商品頁。
-                    const urlWithoutProtocol = foundUrl.replace(/^https?:\/\//, '');
-                    appUrl = `intent://${urlWithoutProtocol}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(foundUrl)};end`;
-                }
-                // iOS 保持原本的 https 網址。因為 iOS 無法指定瀏覽器，只能靠實體點擊觸發 Universal Link。
-
-                // 設定按鈕的跳轉目標
-                document.getElementById("app-btn").href = appUrl;
-                document.getElementById("web-btn").href = foundUrl;
-
-                // 延遲一下讓使用者看見動畫
+                // 延遲 0.8 秒讓使用者看見動畫，然後顯示按鈕
                 setTimeout(() => {
                     // 停止搞笑文案輪播
                     clearInterval(textInterval);
@@ -88,21 +70,15 @@
                     // 改變文字並顯示「實體按鈕」
                     document.getElementById("message").innerHTML = "請點擊下方按鈕前往蝦皮 👇";
                     
-                    if (isInApp) {
-                        // 只要在社群軟體內，特別強調外部瀏覽器的解法
-                        document.getElementById("hint-text").innerHTML = "💡 若按鈕無效，請點擊右上角「⋯」<br>選擇<b>「以瀏覽器開啟 / Safari 開啟」</b>";
-                        document.getElementById("hint-text").style.display = "block";
-                    }
+                    // 顯示破防提示字
+                    document.getElementById("hint-text").innerHTML = "💡 若無法開啟，請點擊右上角「⋯」<br>選擇<b>「以瀏覽器開啟 / Safari 開啟」</b>";
+                    document.getElementById("hint-text").style.display = "block";
                     
+                    // 顯示按鈕區塊，完全等待使用者親手點擊！
                     document.getElementById("btn-container").style.display = "flex";
 
-                    // 嘗試自動跳轉
-                    // 【關鍵修正】只要是在社群軟體內 (不管 iOS 或 Android)，都「絕對不要」自動跳轉！
-                    // 因為自動跳轉的 Intent 會被 Threads/IG 攔截，並強制打開備用的網頁版。
-                    // 必須強迫使用者「手動點擊」按鈕，才能突破攔截。
-                    if (!isInApp) {
-                        window.location.replace(appUrl);
-                    }
+                    // === 【這裡已經把 window.location.replace 徹底刪除】 ===
+                    // === 系統絕對不會再幫你自動跳轉了 ===
                 }, 800);
             } else {
                 document.getElementById("message").innerText = "找不到這個商品連結喔！老闆可能下架了😭";
@@ -146,11 +122,9 @@
         <!-- 手動點擊區域 (預設隱藏，跳轉時才會顯示) -->
         <div id="btn-container" style="display: none; margin-top: 15px; gap: 12px; flex-direction: column; align-items: center;">
             <!-- 蝦皮橘色大按鈕 -->
-            <a id="app-btn" href="#" style="background: #ee4d2d; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(238,77,45,0.3); width: 100%; box-sizing: border-box;">🦐 打開蝦皮 App</a>
-            <!-- 備用的網頁版連結 -->
-            <a id="web-btn" href="#" style="color: #64748b; font-size: 0.9rem; text-decoration: underline;">繼續前往網頁版</a>
+            <a id="app-btn" href="#" style="background: #ee4d2d; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(238,77,45,0.3); width: 100%; box-sizing: border-box;">🦐 立即前往蝦皮</a>
             <!-- 防堵終極陷阱的提示字 -->
-            <p id="hint-text" style="display: none; margin: 5px 0 0 0; font-size: 0.8rem; color: #94a3b8;">💡 若按鈕無效，請點擊右上角「⋯」<br>選擇「以瀏覽器開啟」</p>
+            <p id="hint-text" style="display: none; margin: 5px 0 0 0; font-size: 0.8rem; color: #94a3b8;">💡 若按鈕無效，請點擊右上角「⋯」<br>選擇「以 Safari 開啟」</p>
         </div>
     </div>
 
