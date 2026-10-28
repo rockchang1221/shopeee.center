@@ -62,28 +62,41 @@
                 const ua = navigator.userAgent || navigator.vendor || window.opera;
                 const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
                 const isAndroid = /Android/.test(ua);
+                const isInApp = /Instagram|FBAN|FBAV|Threads|Line/i.test(ua); // 偵測是否在社群軟體內建瀏覽器內
                 
                 // 移除網址前綴 (把 https:// 拿掉，準備轉成 App 協議)
                 const pureUrl = foundUrl.replace(/^https?:\/\//, '');
+                let appUrl = foundUrl;
 
-                // 為了讓用戶稍微看清楚搞笑動畫，我們稍微延遲 0.6 秒再執行跳轉
+                if (isAndroid) {
+                    appUrl = `intent://${pureUrl}#Intent;package=com.shopee.tw;scheme=https;end`;
+                } else if (isIOS) {
+                    appUrl = `shopeetw://${pureUrl}`;
+                }
+
+                // 設定按鈕的跳轉目標
+                document.getElementById("app-btn").href = appUrl;
+                document.getElementById("web-btn").href = foundUrl;
+
+                // 延遲一下讓使用者看見動畫
                 setTimeout(() => {
-                    if (isAndroid) {
-                        // Android: 使用 Intent 語法強迫喚醒蝦皮 App
-                        window.location.replace(`intent://${pureUrl}#Intent;package=com.shopee.tw;scheme=https;end`);
-                    } else if (isIOS) {
-                        // iOS: 使用蝦皮專屬 Scheme 喚醒 App
-                        window.location.replace(`shopeetw://${pureUrl}`);
-                        
-                        // iOS 防呆機制：如果使用者沒安裝蝦皮，2秒後退回網頁版
-                        setTimeout(() => {
-                            window.location.replace(foundUrl);
-                        }, 2000);
+                    // 停止搞笑文案輪播
+                    clearInterval(textInterval);
+                    
+                    // 改變文字並顯示「實體按鈕」 (防禦社群瀏覽器的攔截)
+                    document.getElementById("message").innerHTML = "如果沒有自動跳轉<br><span style='font-size: 0.95rem; color: #ee4d2d;'>請點擊下方按鈕 👇</span>";
+                    if (isInApp) {
+                         document.getElementById("hint-text").style.display = "block";
+                    }
+                    document.getElementById("btn-container").style.display = "flex";
+
+                    // 嘗試自動跳轉 (移除原本2秒自動退回網頁版的邏輯，避免在 Threads 裡蓋過 APP 喚醒)
+                    if (isAndroid || isIOS) {
+                        window.location.replace(appUrl);
                     } else {
-                        // 電腦版或無法辨識的裝置，直接使用原始連結
                         window.location.replace(foundUrl);
                     }
-                }, 600);
+                }, 800);
             } else {
                 document.getElementById("message").innerText = "找不到這個商品連結喔！老闆可能下架了😭";
                 document.getElementById("animation-area").innerHTML = "🤷‍♂️";
@@ -101,9 +114,10 @@
             "打包完成，準備起飛！"
         ];
         let textIndex = 0;
-        setInterval(() => {
+        // 把 setInterval 存入變數，方便跳轉時停止它
+        let textInterval = setInterval(() => {
             const msgEl = document.getElementById("message");
-            if (msgEl && !msgEl.innerText.includes("找不到") && !msgEl.innerText.includes("無效")) {
+            if (msgEl && !msgEl.innerText.includes("找不到") && !msgEl.innerText.includes("無效") && !msgEl.innerText.includes("跳轉")) {
                 textIndex = (textIndex + 1) % funnyTexts.length;
                 msgEl.innerText = funnyTexts[textIndex];
             }
@@ -119,8 +133,18 @@
         <div class="target">🛍️</div>
     </div>
     
-    <div style="text-align: center; color: #475569; background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-        <p id="message" style="margin: 0; font-weight: bold; font-size: 1.1rem;">正在準備專屬優惠...</p>
+    <div style="text-align: center; color: #475569; background: white; padding: 15px 30px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 80%; max-width: 350px;">
+        <p id="message" style="margin: 0; font-weight: bold; font-size: 1.1rem; line-height: 1.5;">正在準備專屬優惠...</p>
+        
+        <!-- 手動點擊區域 (預設隱藏，跳轉時才會顯示) -->
+        <div id="btn-container" style="display: none; margin-top: 15px; gap: 12px; flex-direction: column; align-items: center;">
+            <!-- 蝦皮橘色大按鈕 -->
+            <a id="app-btn" href="#" style="background: #ee4d2d; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(238,77,45,0.3); width: 100%; box-sizing: border-box;">🦐 打開蝦皮 App</a>
+            <!-- 備用的網頁版連結 -->
+            <a id="web-btn" href="#" style="color: #64748b; font-size: 0.9rem; text-decoration: underline;">繼續前往網頁版</a>
+            <!-- 防堵終極陷阱的提示字 -->
+            <p id="hint-text" style="display: none; margin: 5px 0 0 0; font-size: 0.8rem; color: #94a3b8;">💡 若按鈕無效，請點擊右上角「⋯」<br>選擇「以瀏覽器開啟」</p>
+        </div>
     </div>
 
     <style>
