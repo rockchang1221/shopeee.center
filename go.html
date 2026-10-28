@@ -62,7 +62,7 @@
                 const ua = navigator.userAgent || navigator.vendor || window.opera;
                 const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
                 const isAndroid = /Android/.test(ua);
-                const isInApp = /Instagram|FBAN|FBAV|Threads|Line/i.test(ua); // 偵測是否在社群軟體內建瀏覽器內
+                const isInApp = /Instagram|FBAN|FBAV|Threads|Line|MicroMessenger/i.test(ua); // 擴大偵測範圍，包含所有主流社群
                 
                 // 【終極解法】因為 s.shopee.tw 是短網址，直接丟給蝦皮 APP 會導致無法解析而跳回首頁。
                 // 我們必須讓「真正的瀏覽器」去解開短網址，然後再由瀏覽器自動觸發 APP！
@@ -88,20 +88,19 @@
                     // 改變文字並顯示「實體按鈕」
                     document.getElementById("message").innerHTML = "請點擊下方按鈕前往蝦皮 👇";
                     
-                    if (isInApp && isIOS) {
-                        // iOS 在社群軟體內，特別強調 Safari 的解法
+                    if (isInApp) {
+                        // 只要在社群軟體內，特別強調外部瀏覽器的解法
                         document.getElementById("hint-text").innerHTML = "💡 若按鈕無效，請點擊右上角「⋯」<br>選擇<b>「以瀏覽器開啟 / Safari 開啟」</b>";
-                        document.getElementById("hint-text").style.display = "block";
-                    } else if (isInApp) {
                         document.getElementById("hint-text").style.display = "block";
                     }
                     
                     document.getElementById("btn-container").style.display = "flex";
 
                     // 嘗試自動跳轉
-                    // 注意：iOS 在社群 WebView 內如果用 JS 自動跳轉，絕對打不開 APP。
-                    // 所以如果是 iOS + 社群軟體，我們「不」自動跳轉，強迫使用者「手動點擊」按鈕來突破限制。
-                    if (!(isIOS && isInApp)) {
+                    // 【關鍵修正】只要是在社群軟體內 (不管 iOS 或 Android)，都「絕對不要」自動跳轉！
+                    // 因為自動跳轉的 Intent 會被 Threads/IG 攔截，並強制打開備用的網頁版。
+                    // 必須強迫使用者「手動點擊」按鈕，才能突破攔截。
+                    if (!isInApp) {
                         window.location.replace(appUrl);
                     }
                 }, 800);
