@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- ▼▼▼ 這裡換成你要在社群曝光的固定資訊 ▼▼▼ -->
-    <title>專屬好物推薦</title>
+    <title>我的專屬好物推薦</title>
     <meta property="og:title" content="專屬優惠好物推薦">
     <meta property="og:description" content="點擊查看詳細介紹與最新優惠資訊！">
     <meta property="og:image" content="https://你的圖片網址.jpg"> 
@@ -64,18 +64,17 @@
                 const isAndroid = /Android/.test(ua);
                 const isInApp = /Instagram|FBAN|FBAV|Threads|Line/i.test(ua); // 偵測是否在社群軟體內建瀏覽器內
                 
-                // 【關鍵解法】不直接轉換網址，而是呼叫蝦皮 APP 內建的網頁瀏覽器 (Custom WebView)
-                // 這樣可以確保分潤短網址 (s.shopee.tw) 在 APP 內正確跳轉並追蹤分潤
-                const encodedUrl = encodeURIComponent(foundUrl);
+                // 【終極解法】因為 s.shopee.tw 是短網址，直接丟給蝦皮 APP 會導致無法解析而跳回首頁。
+                // 我們必須讓「真正的瀏覽器」去解開短網址，然後再由瀏覽器自動觸發 APP！
                 let appUrl = foundUrl;
 
                 if (isAndroid) {
-                    // Android 寫法：利用 intent 呼叫 shopeetw://customwebview
-                    appUrl = `intent://customwebview/?url=${encodedUrl}#Intent;package=com.shopee.tw;scheme=shopeetw;end`;
-                } else if (isIOS) {
-                    // iOS 寫法：直接使用 shopeetw://customwebview
-                    appUrl = `shopeetw://customwebview/?url=${encodedUrl}`;
+                    // Android：使用 Intent 強制喚醒 Chrome 瀏覽器。
+                    // Chrome 處理短網址後，會完美觸發 Android 系統的 App Link 打開蝦皮商品頁。
+                    const urlWithoutProtocol = foundUrl.replace(/^https?:\/\//, '');
+                    appUrl = `intent://${urlWithoutProtocol}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(foundUrl)};end`;
                 }
+                // iOS 保持原本的 https 網址。因為 iOS 無法指定瀏覽器，只能靠實體點擊觸發 Universal Link。
 
                 // 設定按鈕的跳轉目標
                 document.getElementById("app-btn").href = appUrl;
@@ -86,18 +85,24 @@
                     // 停止搞笑文案輪播
                     clearInterval(textInterval);
                     
-                    // 改變文字並顯示「實體按鈕」 (防禦社群瀏覽器的攔截)
-                    document.getElementById("message").innerHTML = "如果沒有自動跳轉<br><span style='font-size: 0.95rem; color: #ee4d2d;'>請點擊下方按鈕 👇</span>";
-                    if (isInApp) {
-                         document.getElementById("hint-text").style.display = "block";
+                    // 改變文字並顯示「實體按鈕」
+                    document.getElementById("message").innerHTML = "請點擊下方按鈕前往蝦皮 👇";
+                    
+                    if (isInApp && isIOS) {
+                        // iOS 在社群軟體內，特別強調 Safari 的解法
+                        document.getElementById("hint-text").innerHTML = "💡 若按鈕無效，請點擊右上角「⋯」<br>選擇<b>「以瀏覽器開啟 / Safari 開啟」</b>";
+                        document.getElementById("hint-text").style.display = "block";
+                    } else if (isInApp) {
+                        document.getElementById("hint-text").style.display = "block";
                     }
+                    
                     document.getElementById("btn-container").style.display = "flex";
 
-                    // 嘗試自動跳轉 (移除原本2秒自動退回網頁版的邏輯，避免在 Threads 裡蓋過 APP 喚醒)
-                    if (isAndroid || isIOS) {
+                    // 嘗試自動跳轉
+                    // 注意：iOS 在社群 WebView 內如果用 JS 自動跳轉，絕對打不開 APP。
+                    // 所以如果是 iOS + 社群軟體，我們「不」自動跳轉，強迫使用者「手動點擊」按鈕來突破限制。
+                    if (!(isIOS && isInApp)) {
                         window.location.replace(appUrl);
-                    } else {
-                        window.location.replace(foundUrl);
                     }
                 }, 800);
             } else {
