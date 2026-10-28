@@ -50,24 +50,45 @@
                             foundUrl = remainder.substring(1, endQuoteIdx);
                         } else {
                             const endCommaIdx = remainder.indexOf(',');
-                            // 如果後面沒有逗號(沒有日期欄位)，就整串拿來用
-                            foundUrl = endCommaIdx === -1 ? remainder : remainder.substring(0, endCommaIdx);
-                        }
-                        break; // 找到了就停止迴圈
+                        // 如果後面沒有逗號(沒有日期欄位)，就整串拿來用
+                        foundUrl = endCommaIdx === -1 ? remainder : remainder.substring(0, endCommaIdx);
                     }
+                    break; // 找到了就停止迴圈
                 }
+            }
 
-                if (foundUrl) {
-                    // 為了讓用戶稍微看清楚搞笑動畫(也避免太快閃爍)，我們稍微延遲 0.6 秒再跳轉
-                    // 如果你希望極速跳轉，可以把 setTimeout 拿掉，直接寫 window.location.replace(foundUrl);
-                    setTimeout(() => {
+            if (foundUrl) {
+                // 判斷使用者裝置
+                const ua = navigator.userAgent || navigator.vendor || window.opera;
+                const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+                const isAndroid = /Android/.test(ua);
+                
+                // 移除網址前綴 (把 https:// 拿掉，準備轉成 App 協議)
+                const pureUrl = foundUrl.replace(/^https?:\/\//, '');
+
+                // 為了讓用戶稍微看清楚搞笑動畫，我們稍微延遲 0.6 秒再執行跳轉
+                setTimeout(() => {
+                    if (isAndroid) {
+                        // Android: 使用 Intent 語法強迫喚醒蝦皮 App
+                        window.location.replace(`intent://${pureUrl}#Intent;package=com.shopee.tw;scheme=https;end`);
+                    } else if (isIOS) {
+                        // iOS: 使用蝦皮專屬 Scheme 喚醒 App
+                        window.location.replace(`shopeetw://${pureUrl}`);
+                        
+                        // iOS 防呆機制：如果使用者沒安裝蝦皮，2秒後退回網頁版
+                        setTimeout(() => {
+                            window.location.replace(foundUrl);
+                        }, 2000);
+                    } else {
+                        // 電腦版或無法辨識的裝置，直接使用原始連結
                         window.location.replace(foundUrl);
-                    }, 600);
-                } else {
-                    document.getElementById("message").innerText = "找不到這個商品連結喔！老闆可能下架了😭";
-                    document.getElementById("animation-area").innerHTML = "🤷‍♂️";
-                }
-            } catch (error) {
+                    }
+                }, 600);
+            } else {
+                document.getElementById("message").innerText = "找不到這個商品連結喔！老闆可能下架了😭";
+                document.getElementById("animation-area").innerHTML = "🤷‍♂️";
+            }
+        } catch (error) {
                 document.getElementById("message").innerText = "網速好像有點慢，再試一次吧！";
             }
         };
