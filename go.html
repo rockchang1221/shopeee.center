@@ -58,27 +58,71 @@
                 }
 
                 if (foundUrl) {
-                    // 拿到真正的蝦皮分潤網址，立刻跳轉
-                    window.location.replace(foundUrl);
+                    // 為了讓用戶稍微看清楚搞笑動畫(也避免太快閃爍)，我們稍微延遲 0.6 秒再跳轉
+                    // 如果你希望極速跳轉，可以把 setTimeout 拿掉，直接寫 window.location.replace(foundUrl);
+                    setTimeout(() => {
+                        window.location.replace(foundUrl);
+                    }, 600);
                 } else {
-                    document.getElementById("message").innerText = "找不到這個商品連結喔！";
+                    document.getElementById("message").innerText = "找不到這個商品連結喔！老闆可能下架了😭";
+                    document.getElementById("animation-area").innerHTML = "🤷‍♂️";
                 }
             } catch (error) {
-                document.getElementById("message").innerText = "讀取資料失敗，請稍後再試。";
+                document.getElementById("message").innerText = "網速好像有點慢，再試一次吧！";
             }
         };
+
+        // 搞笑文案輪播邏輯
+        const funnyTexts = [
+            "正在翻箱倒櫃找優惠...",
+            "威脅老闆給最低價中 🔪...",
+            "攔截蝦皮折價券 🚀...",
+            "打包完成，準備起飛！"
+        ];
+        let textIndex = 0;
+        setInterval(() => {
+            const msgEl = document.getElementById("message");
+            if (msgEl && !msgEl.innerText.includes("找不到") && !msgEl.innerText.includes("無效")) {
+                textIndex = (textIndex + 1) % funnyTexts.length;
+                msgEl.innerText = funnyTexts[textIndex];
+            }
+        }, 800);
     </script>
 </head>
-<body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif;">
-    <div style="text-align: center; color: #555;">
-        <svg id="spinner" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-bottom: 10px; display: inline-block;">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 2a10 10 0 0 1 10 10"></path>
-        </svg>
-        <p id="message">正在前往專屬優惠頁面...</p>
+<body style="background-color: #f8fafc; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    
+    <div id="animation-area" style="font-size: 4rem; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+        <!-- 狂奔的小人動畫 -->
+        <div class="runner">🏃💨</div>
+        <!-- 目標物 -->
+        <div class="target">🛍️</div>
     </div>
+    
+    <div style="text-align: center; color: #475569; background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+        <p id="message" style="margin: 0; font-weight: bold; font-size: 1.1rem;">正在準備專屬優惠...</p>
+    </div>
+
     <style>
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* 小人左右來回衝刺的動畫 */
+        .runner {
+            animation: dash 1s infinite alternate ease-in-out;
+            transform-origin: bottom center;
+        }
+        
+        /* 目標物微微跳動吸引目光 */
+        .target {
+            animation: bounce 0.8s infinite alternate ease-in-out;
+        }
+
+        @keyframes dash {
+            0% { transform: translateX(-30px) rotate(-10deg); }
+            100% { transform: translateX(20px) rotate(10deg); }
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-10px) scale(1.1); }
+        }
     </style>
 </body>
 </html>
