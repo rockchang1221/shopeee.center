@@ -64,14 +64,17 @@
                 const isAndroid = /Android/.test(ua);
                 const isInApp = /Instagram|FBAN|FBAV|Threads|Line/i.test(ua); // 偵測是否在社群軟體內建瀏覽器內
                 
-                // 移除網址前綴 (把 https:// 拿掉，準備轉成 App 協議)
-                const pureUrl = foundUrl.replace(/^https?:\/\//, '');
+                // 【關鍵解法】不直接轉換網址，而是呼叫蝦皮 APP 內建的網頁瀏覽器 (Custom WebView)
+                // 這樣可以確保分潤短網址 (s.shopee.tw) 在 APP 內正確跳轉並追蹤分潤
+                const encodedUrl = encodeURIComponent(foundUrl);
                 let appUrl = foundUrl;
 
                 if (isAndroid) {
-                    appUrl = `intent://${pureUrl}#Intent;package=com.shopee.tw;scheme=https;end`;
+                    // Android 寫法：利用 intent 呼叫 shopeetw://customwebview
+                    appUrl = `intent://customwebview/?url=${encodedUrl}#Intent;package=com.shopee.tw;scheme=shopeetw;end`;
                 } else if (isIOS) {
-                    appUrl = `shopeetw://${pureUrl}`;
+                    // iOS 寫法：直接使用 shopeetw://customwebview
+                    appUrl = `shopeetw://customwebview/?url=${encodedUrl}`;
                 }
 
                 // 設定按鈕的跳轉目標
