@@ -114,10 +114,17 @@
     </script>
 
     <style>
+        /* 基礎設定，鎖死 100vh 高度，防止捲動 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden; /* 隱藏所有捲動條 */
+        }
+
         /* 高級感背景與字體 */
         body {
-            margin: 0;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -126,59 +133,165 @@
             color: #333;
         }
 
-        /* 毛玻璃質感卡片 */
+        /* 毛玻璃質感卡片 - 增加呼吸空間 */
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px); /* 支援 iOS Safari */
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0,0,0,0.05);
-            border-radius: 24px;
-            padding: 40px 30px;
-            width: 85%;
-            max-width: 360px;
+            border-radius: 20px; /* 稍微縮小圓角 */
+            padding: 32px 24px; /* 縮小內部留白，讓內容更緊湊 */
+            width: 80%; /* 手機上左右會留 10% 空間 */
+            max-width: 320px; /* 限制最大寬度，看起來更精緻 */
             text-align: center;
             transition: all 0.3s ease;
+            box-sizing: border-box; /* 確保 padding 算在 width 內 */
         }
 
-        /* 質感載入動畫 */
+        /* 趣味形狀變換彈跳動畫 */
         .loading-container {
+            position: relative;
             display: flex;
             justify-content: center;
+            align-items: flex-end;
             margin-bottom: 24px;
-            height: 44px; /* 固定高度避免版面跳動 */
+            height: 50px; /* 給予跳躍的高度空間 */
         }
         
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(238, 77, 45, 0.1);
-            border-top-color: #ee4d2d;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        .morph-shape {
+            width: 32px;
+            height: 32px;
+            background-color: #ee4d2d;
+            border-radius: 8px;
+            position: absolute;
+            bottom: 6px;
+            animation: morphAndBounce 2.4s linear infinite;
+            transform-origin: bottom center;
+            z-index: 2;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .shape-shadow {
+            width: 36px;
+            height: 6px;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            animation: shadowSync 2.4s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes morphAndBounce {
+            0% {
+                transform: translateY(0) scale(1.4, 0.6) rotate(0deg); /* 落地壓扁 */
+                border-radius: 8px;
+                background-color: #ee4d2d;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); /* 減速上升 */
+            }
+            12.5% {
+                transform: translateY(-35px) scale(0.9, 1.1) rotate(45deg); /* 騰空拉長 */
+                border-radius: 16px;
+                background-color: #ff9f43;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2); /* 加速下墜 */
+            }
+            25% {
+                transform: translateY(0) scale(1.4, 0.6) rotate(90deg); /* 變為圓形落地 */
+                border-radius: 50%;
+                background-color: #ff6b81;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            37.5% {
+                transform: translateY(-35px) scale(0.9, 1.1) rotate(135deg);
+                border-radius: 16px;
+                background-color: #e74c3c;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            50% {
+                transform: translateY(0) scale(1.4, 0.6) rotate(180deg); /* 變回方形落地 */
+                border-radius: 8px;
+                background-color: #ee4d2d;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            62.5% {
+                transform: translateY(-35px) scale(0.9, 1.1) rotate(225deg);
+                border-radius: 16px;
+                background-color: #ff9f43;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            75% {
+                transform: translateY(0) scale(1.4, 0.6) rotate(270deg); /* 變為圓形落地 */
+                border-radius: 50%;
+                background-color: #ff6b81;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            87.5% {
+                transform: translateY(-35px) scale(0.9, 1.1) rotate(315deg);
+                border-radius: 16px;
+                background-color: #e74c3c;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            100% {
+                transform: translateY(0) scale(1.4, 0.6) rotate(360deg); /* 完美循環 */
+                border-radius: 8px;
+                background-color: #ee4d2d;
+            }
+        }
+
+        @keyframes shadowSync {
+            0% {
+                transform: scaleX(1); opacity: 0.3;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            12.5% {
+                transform: scaleX(0.3); opacity: 0.05;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            25% {
+                transform: scaleX(1); opacity: 0.3;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            37.5% {
+                transform: scaleX(0.3); opacity: 0.05;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            50% {
+                transform: scaleX(1); opacity: 0.3;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            62.5% {
+                transform: scaleX(0.3); opacity: 0.05;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            75% {
+                transform: scaleX(1); opacity: 0.3;
+                animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            87.5% {
+                transform: scaleX(0.3); opacity: 0.05;
+                animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2);
+            }
+            100% {
+                transform: scaleX(1); opacity: 0.3;
+            }
         }
 
         /* 文字樣式 */
         .status-text {
             margin: 0;
             font-weight: 600;
-            font-size: 1.15rem;
+            font-size: 1.05rem; /* 稍微縮小字體 */
             color: #2c3e50;
             letter-spacing: 0.5px;
-            min-height: 28px; /* 避免文字變更時高度跳動 */
+            min-height: 26px;
         }
 
         /* 按鈕容器 */
         .btn-container {
-            margin-top: 24px;
+            margin-top: 20px;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             animation: fadeIn 0.4s ease-out;
         }
 
@@ -195,11 +308,11 @@
             gap: 8px;
             background: linear-gradient(135deg, #ff743a 0%, #ee4d2d 100%);
             color: white;
-            padding: 16px 32px;
-            border-radius: 30px;
+            padding: 14px 24px; /* 稍微縮小按鈕高度 */
+            border-radius: 25px; /* 稍微縮小圓角 */
             text-decoration: none;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             width: 100%;
             box-sizing: border-box;
             box-shadow: 0 10px 20px -5px rgba(238, 77, 45, 0.4);
@@ -215,9 +328,9 @@
         /* 防禦提示文字 */
         .hint-text {
             margin: 0;
-            font-size: 0.85rem;
+            font-size: 0.8rem; /* 稍微縮小提示字 */
             color: #8392a5;
-            line-height: 1.5;
+            line-height: 1.4;
         }
         .hint-text b {
             color: #5c6b7d;
@@ -229,7 +342,8 @@
     <div class="glass-card">
         <!-- 質感載入動畫 -->
         <div id="animation-area" class="loading-container">
-            <div class="spinner"></div>
+            <div class="morph-shape"></div>
+            <div class="shape-shadow"></div>
         </div>
         
         <!-- 動態文字 -->
