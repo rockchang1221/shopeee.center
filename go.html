@@ -4,151 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ▼▼▼ 這裡換成你要在社群曝光的固定資訊 ▼▼▼ -->
-    <title>我的專屬好物推薦</title>
+    <!-- 1. 給社群平台爬蟲看的固定資訊（Open Graph 標籤） -->
+    <title>專屬好物推薦</title>
     <meta property="og:title" content="專屬優惠好物推薦">
     <meta property="og:description" content="點擊查看詳細介紹與最新優惠資訊！">
-    <meta property="og:image" content="https://你的圖片網址.jpg"> 
+    <!-- 換成你設計好的固定縮圖網址 -->
+    <meta property="og:image" content="https://placehold.co/1200x630/ee4d2d/ffffff?text=Shopee+VIP+Only"> 
     <meta property="og:type" content="website">
-    <!-- ▲▲▲ 這裡換成你要在社群曝光的固定資訊 ▲▲▲ -->
 
     <script>
-        // 【重要】這裡換成你「發佈試算表為 CSV」的專屬網址
+        // 你的 Google Sheets 發布為 CSV 的網址
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTo7OsmqFpCf4y8RM_WJVyB_ZCAgTYPAv70CXuW73w0CkKmOHWP418DpBCD9xpZXVIgGmVxE5mj15Hw/pub?gid=0&single=true&output=csv";
 
-        window.onload = async function() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get("id");
+        // 高級感文案輪播邏輯
+        const vipTexts = [
+            "正在為您解析專屬優惠...",
+            "正在套用隱藏版折扣...",
+            "即將開啟您的專屬通道..."
+        ];
+        let textIndex = 0;
+        let textInterval;
 
-            if (!id) {
-                document.getElementById("message").innerText = "連結無效，請確認網址是否完整。";
+        // 啟動文案輪播
+        function startTextAnimation() {
+            textInterval = setInterval(() => {
+                const msgEl = document.getElementById("message");
+                if (msgEl) {
+                    textIndex = (textIndex + 1) % vipTexts.length;
+                    msgEl.innerText = vipTexts[textIndex];
+                }
+            }, 800);
+        }
+
+        // 停止文案輪播並顯示錯誤
+        function showError(msg) {
+            clearInterval(textInterval);
+            document.getElementById("animation-area").style.display = "none";
+            document.getElementById("message").innerHTML = "❌ " + msg;
+            document.getElementById("message").style.color = "#e74c3c";
+        }
+
+        // 主程式：讀取 CSV 並綁定按鈕
+        async function loadTargetUrl() {
+            startTextAnimation();
+
+            const params = new URLSearchParams(window.location.search);
+            const targetId = params.get("id");
+
+            if (!targetId) {
+                showError("無效的專屬連結 (缺少代碼)");
                 return;
             }
 
             try {
-                // 抓取 CSV 檔案 (速度極快)
+                // 抓取 CSV 資料
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
                 
-                // 將 CSV 按行分割
-                const lines = csvText.split('\n');
+                // 解析 CSV 尋找對應的連結
+                const rows = csvText.split('\n');
                 let foundUrl = null;
-
-                // 從第2行開始找 (跳過標題列)
-                for (let i = 1; i < lines.length; i++) { 
-                    const line = lines[i].trim();
+                
+                // 跳過第一行標題，從 i = 1 開始找
+                for (let i = 1; i < rows.length; i++) {
+                    const line = rows[i].trim();
                     if (!line) continue;
                     
-                    // 尋找符合該 ID 的那一行
-                    if (line.startsWith(id + ',')) {
-                        // 擷取逗號後面的內容 (即 URL 部分)
-                        let remainder = line.substring(id.length + 1);
-                        
-                        // 處理由 Google Sheets 匯出時，若網址內含逗號會自動加上雙引號的狀況
-                        if (remainder.startsWith('"')) {
-                            const endQuoteIdx = remainder.indexOf('"', 1);
-                            foundUrl = remainder.substring(1, endQuoteIdx);
-                        } else {
-                            const endCommaIdx = remainder.indexOf(',');
-                        // 如果後面沒有逗號(沒有日期欄位)，就整串拿來用
-                        foundUrl = endCommaIdx === -1 ? remainder : remainder.substring(0, endCommaIdx);
+                    // 以逗號分割 (第一欄是ID, 第二欄是URL)
+                    const firstComma = line.indexOf(',');
+                    if (firstComma > -1) {
+                        const id = line.substring(0, firstComma).replace(/['"]/g, '').trim();
+                        if (id === targetId) {
+                            const rest = line.substring(firstComma + 1);
+                            const secondComma = rest.indexOf(',');
+                            // 擷取第二欄網址
+                            if (secondComma > -1) {
+                                foundUrl = rest.substring(0, secondComma).replace(/['"]/g, '').trim();
+                            } else {
+                                foundUrl = rest.replace(/['"]/g, '').trim();
+                            }
+                            break;
+                        }
                     }
-                    break; // 找到了就停止迴圈
                 }
-            }
 
-            if (foundUrl) {
-                // 【徹底拔除】所有裝置判斷與意圖 (Intent) 轉換
-                // 直接將抓到的最原始分潤連結，綁定到按鈕上
-                document.getElementById("app-btn").href = foundUrl;
+                if (foundUrl) {
+                    // 【關鍵防護】打死不自動跳轉，只把連結綁在按鈕上
+                    document.getElementById("app-btn").href = foundUrl;
 
-                // 延遲 0.8 秒讓使用者看見動畫，然後顯示按鈕
-                setTimeout(() => {
-                    // 停止搞笑文案輪播
-                    clearInterval(textInterval);
-                    
-                    // 改變文字並顯示「實體按鈕」
-                    document.getElementById("message").innerHTML = "請點擊下方按鈕前往蝦皮 👇";
-                    
-                    // 顯示破防提示字
-                    document.getElementById("hint-text").innerHTML = "💡 若無法開啟，請點擊右上角「⋯」<br>選擇<b>「以瀏覽器開啟 / Safari 開啟」</b>";
-                    document.getElementById("hint-text").style.display = "block";
-                    
-                    // 顯示按鈕區塊，完全等待使用者親手點擊！
-                    document.getElementById("btn-container").style.display = "flex";
+                    // 延遲 0.6 秒讓使用者看到高級感的過場，再顯示按鈕
+                    setTimeout(() => {
+                        clearInterval(textInterval); // 停止文字輪播
+                        document.getElementById("animation-area").style.display = "none"; // 隱藏轉圈圈
+                        document.getElementById("message").innerHTML = "專屬通道已為您準備完畢 ✨"; // 更新提示字
+                        document.getElementById("btn-container").style.display = "flex"; // 秀出按鈕
+                    }, 600);
+                } else {
+                    showError("找不到對應的專屬連結");
+                }
 
-                    // === 【這裡已經把 window.location.replace 徹底刪除】 ===
-                    // === 系統絕對不會再幫你自動跳轉了 ===
-                }, 800);
-            } else {
-                document.getElementById("message").innerText = "找不到這個商品連結喔！老闆可能下架了😭";
-                document.getElementById("animation-area").innerHTML = "🤷‍♂️";
+            } catch (error) {
+                showError("系統連線異常，請稍後再試");
+                console.error(error);
             }
-        } catch (error) {
-                document.getElementById("message").innerText = "網速好像有點慢，再試一次吧！";
-            }
-        };
+        }
 
-        // 搞笑文案輪播邏輯
-        const funnyTexts = [
-            "正在翻箱倒櫃找優惠...",
-            "威脅老闆給最低價中 🔪...",
-            "攔截蝦皮折價券 🚀...",
-            "打包完成，準備起飛！"
-        ];
-        let textIndex = 0;
-        // 把 setInterval 存入變數，方便跳轉時停止它
-        let textInterval = setInterval(() => {
-            const msgEl = document.getElementById("message");
-            if (msgEl && !msgEl.innerText.includes("找不到") && !msgEl.innerText.includes("無效") && !msgEl.innerText.includes("跳轉")) {
-                textIndex = (textIndex + 1) % funnyTexts.length;
-                msgEl.innerText = funnyTexts[textIndex];
-            }
-        }, 800);
+        // 確保網頁完全載入後才執行
+        window.onload = loadTargetUrl;
     </script>
-</head>
-<body style="background-color: #f8fafc; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-    
-    <div id="animation-area" style="font-size: 4rem; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
-        <!-- 狂奔的小人動畫 -->
-        <div class="runner">🏃💨</div>
-        <!-- 目標物 -->
-        <div class="target">🛍️</div>
-    </div>
-    
-    <div style="text-align: center; color: #475569; background: white; padding: 15px 30px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 80%; max-width: 350px;">
-        <p id="message" style="margin: 0; font-weight: bold; font-size: 1.1rem; line-height: 1.5;">正在準備專屬優惠...</p>
+
+    <style>
+        /* 高級感背景與字體 */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+
+        /* 毛玻璃質感卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); /* 支援 iOS Safari */
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 24px;
+            padding: 40px 30px;
+            width: 85%;
+            max-width: 360px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        /* 質感載入動畫 */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+            height: 44px; /* 固定高度避免版面跳動 */
+        }
         
-        <!-- 手動點擊區域 (預設隱藏，跳轉時才會顯示) -->
-        <div id="btn-container" style="display: none; margin-top: 15px; gap: 12px; flex-direction: column; align-items: center;">
-            <!-- 蝦皮橘色大按鈕 -->
-            <a id="app-btn" href="#" style="background: #ee4d2d; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(238,77,45,0.3); width: 100%; box-sizing: border-box;">🦐 立即前往蝦皮</a>
-            <!-- 防堵終極陷阱的提示字 -->
-            <p id="hint-text" style="display: none; margin: 5px 0 0 0; font-size: 0.8rem; color: #94a3b8;">💡 若按鈕無效，請點擊右上角「⋯」<br>選擇「以 Safari 開啟」</p>
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(238, 77, 45, 0.1);
+            border-top-color: #ee4d2d;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 文字樣式 */
+        .status-text {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.15rem;
+            color: #2c3e50;
+            letter-spacing: 0.5px;
+            min-height: 28px; /* 避免文字變更時高度跳動 */
+        }
+
+        /* 按鈕容器 */
+        .btn-container {
+            margin-top: 24px;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 高級感漸層按鈕 */
+        .premium-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ff743a 0%, #ee4d2d 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 10px 20px -5px rgba(238, 77, 45, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* 按下去的回饋感 */
+        .premium-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 5px 10px -3px rgba(238, 77, 45, 0.4);
+        }
+
+        /* 防禦提示文字 */
+        .hint-text {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #8392a5;
+            line-height: 1.5;
+        }
+        .hint-text b {
+            color: #5c6b7d;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="glass-card">
+        <!-- 質感載入動畫 -->
+        <div id="animation-area" class="loading-container">
+            <div class="spinner"></div>
+        </div>
+        
+        <!-- 動態文字 -->
+        <p id="message" class="status-text">準備載入中...</p>
+        
+        <!-- 手動點擊區域 (預設隱藏，找到網址後才會用 JS 顯示) -->
+        <div id="btn-container" class="btn-container" style="display: none;">
+            
+            <!-- 蝦皮漸層大按鈕 (href 會在 JS 中動態寫入) -->
+            <a id="app-btn" href="#" class="premium-btn">
+                <span>立即前往蝦皮</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+            
+            <!-- 防堵 Threads 終極陷阱的提示字 -->
+            <p id="hint-text" class="hint-text">
+                💡 若按鈕無效，請點擊右上角「⋯」<br>選擇<b>「以 Safari 開啟」</b>
+            </p>
         </div>
     </div>
 
-    <style>
-        /* 小人左右來回衝刺的動畫 */
-        .runner {
-            animation: dash 1s infinite alternate ease-in-out;
-            transform-origin: bottom center;
-        }
-        
-        /* 目標物微微跳動吸引目光 */
-        .target {
-            animation: bounce 0.8s infinite alternate ease-in-out;
-        }
-
-        @keyframes dash {
-            0% { transform: translateX(-30px) rotate(-10deg); }
-            100% { transform: translateX(20px) rotate(10deg); }
-        }
-
-        @keyframes bounce {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-10px) scale(1.1); }
-        }
-    </style>
 </body>
 </html>
