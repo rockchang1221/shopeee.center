@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <meta property="og:image" content="og-image.jpg">
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #ffffff; color: #171717; -webkit-font-smoothing: antialiased; }
@@ -207,6 +207,7 @@
                             type: row.type,
                             media: row.media,
                             title: row.title,
+                            keyword: row.keyword || '',
                             categories: row.categories ? row.categories.split(',').map(c => c.trim()).filter(c => c) : [],
                             rating: parseFloat(row.rating) || 0,
                             text: row.text,
@@ -319,7 +320,8 @@
             if (currentSearchQuery) {
                 filtered = filtered.filter(p => 
                     (p.title && p.title.toLowerCase().includes(currentSearchQuery)) || 
-                    (p.text && p.text.toLowerCase().includes(currentSearchQuery))
+                    (p.text && p.text.toLowerCase().includes(currentSearchQuery)) ||
+                    (p.keyword && p.keyword.toLowerCase().includes(currentSearchQuery))
                 );
             }
 
@@ -491,7 +493,7 @@
 
             const postContentHTML = `
                 <h2 class="text-2xl font-black mb-4 text-neutral-900">${data.title}</h2>
-                <div class="text-neutral-600 text-sm leading-loose mb-4 flex-grow">${data.text}</div>
+                <div class="text-neutral-600 text-sm leading-loose mb-8 flex-grow">${data.text}</div>
                 <div class="mt-auto pt-6 border-t border-neutral-100">
                     <a href="${data.link}" target="_blank" onclick="trackClick('${data.id}')" class="block w-full bg-[#0071E3] text-white font-bold py-3.5 rounded text-center hover:bg-[#0071E3]/90 transition-colors shadow-lg">前往蝦皮領取優惠</a>
                 </div>
