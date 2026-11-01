@@ -98,7 +98,9 @@
         <!-- 第一列：獨立的控制列 (電腦版 Sorting & Search) -->
         <div class="hidden xl:flex w-full pb-6 mb-6 justify-between items-center border-b border-neutral-100 shrink-0">
             <div class="flex items-center gap-6 shrink-0" id="desktopSortContainer">
-                <span id="sortBtn-clicks-desktop" onclick="setSort('clicks')" class="text-sm font-black text-neutral-900 cursor-pointer">熱度最高</span>
+                <span id="sortBtn-comprehensive-desktop" onclick="setSort('comprehensive')" class="text-sm font-black text-neutral-900 cursor-pointer">綜合排名</span>
+                <span id="sortBtn-clicks-desktop" onclick="setSort('clicks')" class="text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors">熱度最高</span>
+                <span id="sortBtn-rating-desktop" onclick="setSort('rating')" class="text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors">買家評分</span>
                 <span id="sortBtn-date-desktop" onclick="setSort('date')" class="text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors">最近更新</span>
             </div>
             <div class="w-72 relative group shrink-0">
@@ -113,7 +115,9 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg>
                 </button>
                 <div id="mobileSortMenu" class="hidden absolute top-full left-0 mt-2 w-32 bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-neutral-100 z-30 py-1 overflow-hidden transition-all origin-top-left">
-                    <button id="sortBtn-clicks-mobile" onclick="setSort('clicks')" class="w-full text-left px-4 py-2.5 text-sm font-black text-neutral-900 bg-neutral-50 hover:bg-neutral-100">熱度最高</button>
+                    <button id="sortBtn-comprehensive-mobile" onclick="setSort('comprehensive')" class="w-full text-left px-4 py-2.5 text-sm font-black text-neutral-900 bg-neutral-50 hover:bg-neutral-100">綜合排名</button>
+                    <button id="sortBtn-clicks-mobile" onclick="setSort('clicks')" class="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50">熱度最高</button>
+                    <button id="sortBtn-rating-mobile" onclick="setSort('rating')" class="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50">買家評分</button>
                     <button id="sortBtn-date-mobile" onclick="setSort('date')" class="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50">最近更新</button>
                 </div>
             </div>
@@ -177,7 +181,7 @@
         let allCategories = [];
         let activeCategories = new Set();
         let currentSearchQuery = "";
-        let currentSortMode = "clicks"; 
+        let currentSortMode = "comprehensive"; 
         let filterTimeout; 
 
         const productGrid = document.getElementById('productGrid');
@@ -194,20 +198,37 @@
                     skipEmptyLines: true,
                     transformHeader: function(header) { return header.toLowerCase().trim(); },
                     complete: function(results) {
-                        products = results.data.map((row, index) => ({
-                            id: row.id,
-                            type: row.type,
-                            media: row.media,
-                            title: row.title,
-                            keyword: row.keyword || '',
-                            categories: row.categories ? row.categories.split(',').map(c => c.trim()).filter(c => c) : [],
-                            rating: parseFloat(row.rating) || 0,
-                            text: row.text,
-                            link: row.link,
-                            clicks: parseInt(row.clicks) || 0,
-                            rawIframe: row.rawIframe || '',
-                            originalIndex: index
-                        }));
+                        // 計算最高點擊數，用於標準化綜合排名的分數
+                        let maxClicks = 1;
+                        results.data.forEach(row => {
+                            const c = parseInt(row.clicks) || 0;
+                            if (c > maxClicks) maxClicks = c;
+                        });
+
+                        products = results.data.map((row, index) => {
+                            const clicks = parseInt(row.clicks) || 0;
+                            const rating = parseFloat(row.rating) || 0;
+                            
+                            // 演算法：點擊分數標準化為 5 分滿分，再與實際評分各乘 0.5
+                            const clickScore = (clicks / maxClicks) * 5;
+                            const comprehensiveScore = (clickScore * 0.5) + (rating * 0.5);
+
+                            return {
+                                id: row.id,
+                                type: row.type,
+                                media: row.media,
+                                title: row.title,
+                                keyword: row.keyword || '',
+                                categories: row.categories ? row.categories.split(',').map(c => c.trim()).filter(c => c) : [],
+                                rating: rating,
+                                text: row.text,
+                                link: row.link,
+                                clicks: clicks,
+                                rawIframe: row.rawIframe || '',
+                                originalIndex: index,
+                                comprehensiveScore: comprehensiveScore
+                            };
+                        });
 
                         extractCategories();
                         applyFiltersAndRender();
@@ -276,7 +297,7 @@
         }
 
         function updateSortUI() {
-            ['clicks', 'date'].forEach(mode => {
+            ['comprehensive', 'clicks', 'rating', 'date'].forEach(mode => {
                 const isMatch = currentSortMode === mode;
                 const dBtn = document.getElementById(`sortBtn-${mode}-desktop`);
                 if(dBtn) dBtn.className = isMatch ? "text-sm font-black text-neutral-900 cursor-pointer" : "text-sm font-medium text-neutral-400 hover:text-neutral-900 cursor-pointer transition-colors";
@@ -309,9 +330,14 @@
             }
 
             filtered = [...filtered].sort((a, b) => {
-                if (currentSortMode === 'clicks') {
+                if (currentSortMode === 'comprehensive') {
+                    return b.comprehensiveScore - a.comprehensiveScore;
+                } else if (currentSortMode === 'clicks') {
                     if (b.clicks !== a.clicks) return b.clicks - a.clicks;
                     return b.rating - a.rating;
+                } else if (currentSortMode === 'rating') {
+                    if (b.rating !== a.rating) return b.rating - a.rating;
+                    return b.clicks - a.clicks;
                 } else {
                     return b.originalIndex - a.originalIndex;
                 }
