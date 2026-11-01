@@ -56,7 +56,6 @@
     <header class="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 border-b border-neutral-100 relative">
         <div class="w-full px-3 md:px-5 xl:px-10 h-20 flex justify-between items-center gap-4">
             <a href="#" class="shrink-0 flex items-center h-6">
-                <!-- 確保 Logo 在最左邊，高度精準控制 -->
                 <img src="logo.png" alt="蝦皮好物研究中心 Logo" class="h-full w-auto object-contain">
             </a>
             
@@ -65,7 +64,6 @@
                     <a href="#" class="text-sm font-bold text-neutral-900 hover:text-neutral-600 transition-colors">精選好物</a>
                     <a href="./disclaimer.pdf" target="_blank" class="text-sm font-bold text-neutral-400 hover:text-neutral-900 transition-colors">使用者須知</a>
                 </nav>
-                <!-- 平板與手機 (xl以下) 顯示的搜尋與漢堡選單 -->
                 <div class="flex items-center gap-2 xl:hidden">
                     <button id="mobileSearchBtn" class="p-2 text-neutral-900 focus:outline-none flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
@@ -129,7 +127,6 @@
         <div class="flex flex-col xl:flex-row gap-8 w-full">
             
             <!-- 左側邊欄：電腦版 (xl以上) 顯示的分類篩選工具 -->
-            <!-- 注意：因為上面的控制列已經獨立了，所以這裡的頂部會跟右邊的卡片完美水平切齊！ -->
             <aside class="hidden xl:block w-52 shrink-0">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-bold text-neutral-900">分類篩選</h3>
@@ -141,14 +138,13 @@
             </aside>
 
             <!-- 右側主要內容區 (商品網格) -->
-            <!-- 已經調整為：手機 2格、平板 4格、電腦 4格 (維持精緻度) -->
             <main class="flex-1 min-w-0">
                 <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-                    <!-- 初次載入的 12 張骨架屏，無縫極簡設計 -->
+                    <!-- 初次載入的骨架屏 -->
                     <script>
                         document.write(Array(12).fill(`
                             <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
-                                <div class="w-full aspect-[4/3] skeleton-bg"></div>
+                                <div class="w-full aspect-square skeleton-bg"></div>
                                 <div class="p-3 md:p-4 flex-grow flex items-center">
                                     <div class="h-4 w-2/3 skeleton-bg rounded-md"></div>
                                 </div>
@@ -156,7 +152,6 @@
                                     <div class="w-[50px] shrink-0 flex items-center justify-center">
                                         <div class="w-5 h-5 skeleton-bg rounded-full"></div>
                                     </div>
-                                    <!-- 骨架屏的傳送門也靠右對齊 -->
                                     <div class="flex-1 flex items-center justify-end pr-3">
                                         <div class="h-4 w-24 skeleton-bg rounded-md"></div>
                                     </div>
@@ -171,27 +166,24 @@
 
     <!-- 商品詳細介紹彈出視窗 (Modal) -->
     <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none" onclick="handleBackdropClick(event)">
-        <div id="modalContent" class="relative bg-white rounded-xl shadow-2xl overflow-hidden w-full transition-transform duration-300 scale-95 flex"></div>
+        <div id="modalContent" class="relative bg-white rounded-xl shadow-2xl w-full transition-transform duration-300 scale-95 flex"></div>
     </div>
 
     <script>
-        // 核心資料庫與 API 連結
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQGHKBfq5lf7E6AEp4yarLpPqhvUzE3rXHMPJY7bU2-h2LwIQLk3CDAx8l6kv95aG-HyCL332bSBBQX/pub?gid=0&single=true&output=csv';
         const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw21ICqg7RSgUJswjKjSWguDwNosJ7lned_UO61EKHiDY452D_0fqGZbRaiAhcTiUrj0Q/exec';
 
-        // 狀態管理
         let products = [];
         let allCategories = [];
         let activeCategories = new Set();
         let currentSearchQuery = "";
-        let currentSortMode = "clicks"; // 'clicks' 或 'date'
-        let filterTimeout; // 用來控制 0.4 秒虛擬延遲的計時器
+        let currentSortMode = "clicks"; 
+        let filterTimeout; 
 
         const productGrid = document.getElementById('productGrid');
         const modal = document.getElementById('productModal');
         const modalContent = document.getElementById('modalContent');
 
-        // 啟動：抓取資料
         async function fetchProducts() {
             try {
                 const response = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -227,7 +219,6 @@
             }
         }
 
-        // 萃取分類並繪製選單
         function extractCategories() {
             const catSet = new Set();
             products.forEach(p => p.categories.forEach(c => catSet.add(c)));
@@ -235,7 +226,6 @@
             renderCategoryMenus();
         }
 
-        // 繪製 左側 Checkbox 與 橫向 Pill
         function renderCategoryMenus() {
             const dList = document.getElementById('desktopCategoryList');
             const mList = document.getElementById('mobileCategoryList');
@@ -244,7 +234,6 @@
             allCategories.forEach(cat => {
                 const isChecked = activeCategories.has(cat);
                 
-                // 電腦版 Checkbox 設計
                 dList.insertAdjacentHTML('beforeend', `
                     <label class="flex items-center gap-3 cursor-pointer group">
                         <div class="relative flex items-center justify-center w-[18px] h-[18px] rounded-[3px] border ${isChecked ? 'border-neutral-900 bg-neutral-900' : 'border-neutral-300 bg-white group-hover:border-neutral-500'} transition-colors">
@@ -255,7 +244,6 @@
                     </label>
                 `);
 
-                // 平板/手機版 膠囊標籤
                 mList.insertAdjacentHTML('beforeend', `
                     <button onclick="toggleCategory('${cat}')" class="shrink-0 px-4 py-1.5 rounded-full text-sm transition-colors border ${isChecked ? 'bg-neutral-900 text-white border-neutral-900 font-bold' : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50 font-medium'}">
                         ${cat}
@@ -264,7 +252,6 @@
             });
         }
 
-        // 切換單一分類
         function toggleCategory(cat) {
             if (activeCategories.has(cat)) activeCategories.delete(cat);
             else activeCategories.add(cat);
@@ -273,14 +260,12 @@
             applyFiltersAndRender();
         }
 
-        // 清除所有分類
         function clearCategories() {
             activeCategories.clear();
             renderCategoryMenus();
             applyFiltersAndRender();
         }
 
-        // 設定排序模式
         function setSort(mode) {
             currentSortMode = mode;
             updateSortUI();
@@ -290,7 +275,6 @@
             if(!sortMenu.classList.contains('hidden')) toggleMobileSortMenu();
         }
 
-        // 更新排序按鈕的文字粗細
         function updateSortUI() {
             ['clicks', 'date'].forEach(mode => {
                 const isMatch = currentSortMode === mode;
@@ -301,7 +285,6 @@
             });
         }
 
-        // 處理搜尋列輸入
         function handleSearch(event, query) {
             currentSearchQuery = query.toLowerCase().trim();
             document.getElementById('desktopSearchInput').value = query;
@@ -310,11 +293,7 @@
             applyFiltersAndRender();
         }
 
-        // ==========================================
-        // 核心邏輯：過濾資料並展示「虛擬載入延遲」
-        // ==========================================
         function applyFiltersAndRender() {
-            // 1. 先計算出過濾後的資料
             let filtered = products;
 
             if (currentSearchQuery) {
@@ -338,22 +317,18 @@
                 }
             });
 
-            // 2. 清空網格，呼叫骨架屏動畫
             showSkeletons();
 
-            // 3. 虛擬延遲 (0.4秒)：清除前一次計時器，避免狂點
             clearTimeout(filterTimeout);
             filterTimeout = setTimeout(() => {
-                // 延遲結束後，渲染真正的卡片
                 renderCards(filtered);
-            }, 400); // 這裡控制延遲時間，400 = 0.4秒
+            }, 400); 
         }
 
-        // 產生骨架屏的函數 (包含靠右對齊的底部按鈕與無縫底線)
         function showSkeletons() {
             productGrid.innerHTML = Array(12).fill(`
                 <article class="flex flex-col h-full bg-white border border-neutral-200 rounded-xl overflow-hidden pointer-events-none">
-                    <div class="w-full aspect-[4/3] skeleton-bg"></div>
+                    <div class="w-full aspect-square skeleton-bg"></div>
                     <div class="p-3 md:p-4 flex-grow flex items-center">
                         <div class="h-4 w-2/3 skeleton-bg rounded-md"></div>
                     </div>
@@ -369,7 +344,6 @@
             `).join('');
         }
 
-        // 渲染真正的商品卡片
         function renderCards(dataToRender) {
             productGrid.innerHTML = ''; 
             if (dataToRender.length === 0) {
@@ -379,32 +353,25 @@
 
             dataToRender.forEach(product => {
                 const videoIconHTML = product.type === 'video' ? `<div class="absolute bottom-2 right-2 text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 drop-shadow-md"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" /></svg></div>` : '';
-                // 破圖保護機制：如果圖死了，換上灰色的 Image Not Found
                 const fallbackImg = "this.onerror=null; this.src='https://placehold.co/800x600/f3f4f6/a3a3a3?text=Image+Not+Found';";
 
-                // 卡片本身就是陷阱，游標為 pointer，點擊觸發跳轉，Hover時右下角按鈕連動
                 const cardHTML = `
                     <article class="flex flex-col h-full group bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer" onclick="trackClick('${product.id}'); window.open('${product.link}', '_blank');">
-                        
-                        <div class="w-full aspect-[4/3] bg-neutral-50 overflow-hidden relative shrink-0">
+                        <div class="w-full aspect-square bg-neutral-50 overflow-hidden relative shrink-0">
                             <img src="${product.media}" alt="${product.title}" onerror="${fallbackImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                             ${videoIconHTML}
                         </div>
                         
                         <div class="p-3 md:p-4 flex-grow flex items-center">
-                            <h2 class="text-sm font-medium text-neutral-900 line-clamp-1" title="${product.title}">${product.title}</h2>
+                            <h2 class="text-base font-medium text-neutral-900 line-clamp-1" title="${product.title}">${product.title}</h2>
                         </div>
                         
-                        <!-- 底部區域 (純粹留白，無分割線) -->
                         <div class="mt-auto flex items-stretch h-[46px] relative shrink-0">
-                            <!-- 資訊 Icon (阻擋冒泡，點擊不會跳轉蝦皮，只開介紹) -->
                             <button onclick="event.stopPropagation(); openModal('${product.id}')" class="w-[50px] shrink-0 flex items-center justify-center text-neutral-400 hover:text-neutral-900 transition-colors z-10" title="查看商品介紹">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                 </svg>
                             </button>
-                            
-                            <!-- 蝦皮傳送門 (精準靠右對齊 justify-end pr-3) -->
                             <div class="flex-1 flex items-center justify-end pr-3 gap-1.5 text-sm font-medium text-neutral-900 group-hover:text-orange-500 transition-colors">
                                 蝦皮傳送門
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
@@ -418,25 +385,21 @@
             });
         }
 
-        // 發送點擊訊號給 GAS
         function trackClick(productId) {
             fetch(`${GAS_WEBHOOK_URL}?id=${productId}`, { mode: 'no-cors' }).catch(console.error);
         }
 
-        // 手機版下拉選單通用邏輯 (含退場動畫與漢堡形變動畫)
         function toggleDropdown(targetId) {
             const target = document.getElementById(targetId);
             const otherId = targetId === 'mobileMenu' ? 'mobileSearchDropdown' : 'mobileMenu';
             const other = document.getElementById(otherId);
             
-            // 抓取漢堡選單的三條線
             const bar1 = document.getElementById('ham-bar1');
             const bar2 = document.getElementById('ham-bar2');
             const bar3 = document.getElementById('ham-bar3');
 
-            // 負責處理漢堡變成叉叉的動畫邏輯
             const updateHamIcon = (isOpen) => {
-                if (!bar1 || !bar2 || !bar3) return; // 安全保護：如果找不到線，就終止動畫，防止當機
+                if (!bar1 || !bar2 || !bar3) return; 
                 if (isOpen) {
                     bar1.classList.remove('w-[18px]');
                     bar1.classList.add('w-[22px]', 'translate-y-[7px]', 'rotate-45');
@@ -450,23 +413,21 @@
                 }
             };
 
-            // 如果另一個選單正開著，先關掉它
             if (!other.classList.contains('hidden')) {
                 other.classList.remove('animate-slide-down');
                 other.classList.add('animate-slide-up');
-                if (otherId === 'mobileMenu') updateHamIcon(false); // 若被迫關閉選單，叉叉轉回漢堡
+                if (otherId === 'mobileMenu') updateHamIcon(false); 
                 setTimeout(() => { other.classList.add('hidden'); other.classList.remove('animate-slide-up'); }, 200);
             }
 
-            // 切換目標選單
             if (target.classList.contains('hidden')) {
                 target.classList.remove('hidden', 'animate-slide-up');
                 target.classList.add('animate-slide-down');
-                if (targetId === 'mobileMenu') updateHamIcon(true); // 打開選單，漢堡轉成叉叉
+                if (targetId === 'mobileMenu') updateHamIcon(true); 
             } else {
                 target.classList.remove('animate-slide-down');
                 target.classList.add('animate-slide-up');
-                if (targetId === 'mobileMenu') updateHamIcon(false); // 關閉選單，叉叉轉回漢堡
+                if (targetId === 'mobileMenu') updateHamIcon(false); 
                 setTimeout(() => { target.classList.add('hidden'); target.classList.remove('animate-slide-up'); }, 200);
             }
         }
@@ -486,29 +447,72 @@
         document.getElementById('mobileMenuBtn').addEventListener('click', () => toggleDropdown('mobileMenu'));
         document.getElementById('mobileSearchBtn').addEventListener('click', () => toggleDropdown('mobileSearchDropdown'));
 
-        // Modal 邏輯
         function openModal(productId) {
             const data = products.find(p => p.id === productId);
             if (!data) return;
 
-            const postContentHTML = `
+            const titleAndTextHTML = `
                 <h2 class="text-2xl font-black mb-4 text-neutral-900">${data.title}</h2>
-                <div class="text-neutral-600 text-sm leading-loose mb-8 flex-grow">${data.text}</div>
-                <div class="mt-auto pt-6 border-t border-neutral-100">
-                    <a href="${data.link}" target="_blank" onclick="trackClick('${data.id}')" class="block w-full bg-[#0071E3] text-white font-bold py-3.5 rounded text-center hover:bg-[#0071E3]/90 transition-colors shadow-lg">前往蝦皮領取優惠</a>
-                </div>
+                <div class="text-neutral-600 text-sm leading-loose">${data.text}</div>
             `;
+
             const closeBtnHTML = `<button onclick="closeModal()" class="absolute top-4 right-4 z-50 text-neutral-400 hover:text-neutral-900 bg-white/80 hover:bg-white backdrop-blur-md p-1.5 rounded-full transition-colors shadow-sm"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>`;
 
             if (data.type === 'video' && data.rawIframe) {
-                // 將平板(md)以上的高度由 85vh 縮小至 75vh，營造上下懸浮的呼吸感
-                modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-y-auto md:overflow-hidden transition-transform duration-300 scale-95 flex flex-col md:flex-row w-full max-w-[400px] md:max-w-none md:w-auto max-h-[85vh] md:h-[75vh]";
+                const stickyButtonHTML = `
+                    <div class="pt-4 mt-auto border-t border-neutral-100 shrink-0 bg-white relative z-10">
+                        <a href="${data.link}" target="_blank" onclick="trackClick('${data.id}')" class="block w-full bg-[#0071E3] text-white font-bold py-3.5 rounded-lg text-center hover:bg-[#0071E3]/90 transition-colors shadow-lg">前往蝦皮領取優惠</a>
+                    </div>
+                `;
+                
+                // 強制 lg:h-[75vh]，讓高度主導寬度，撐起整個視窗
+                modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-hidden transition-transform duration-300 scale-95 flex flex-col lg:flex-row w-full max-w-[400px] md:max-w-[500px] lg:max-w-[95vw] lg:w-auto max-h-[85vh] md:max-h-[80vh] lg:h-[75vh]";
                 const responsiveIframe = data.rawIframe.replace('<iframe', '<iframe class="absolute inset-0 w-full h-full z-20"');
-                modalContent.innerHTML = `${closeBtnHTML}<div class="w-full aspect-[9/16] md:w-auto md:h-full md:aspect-[9/16] bg-black relative shrink-0 md:rounded-l-xl md:rounded-tr-none overflow-hidden">${responsiveIframe}</div><div class="w-full md:w-[360px] p-6 md:p-8 flex flex-col flex-1 bg-white">${postContentHTML}</div>`;
+                
+                modalContent.innerHTML = `
+                    ${closeBtnHTML}
+                    <div class="w-full aspect-[9/16] lg:w-auto lg:h-full lg:aspect-[9/16] bg-black relative shrink-0 lg:rounded-l-xl lg:rounded-tr-none overflow-hidden">
+                        ${responsiveIframe}
+                    </div>
+                    <div class="w-full lg:w-[400px] xl:w-[500px] p-6 md:p-8 flex flex-col flex-1 bg-white overflow-hidden min-w-0 min-h-0">
+                        <div class="flex-1 overflow-y-auto no-scrollbar pr-2 pb-2 min-h-0">
+                            ${titleAndTextHTML}
+                        </div>
+                        ${stickyButtonHTML}
+                    </div>
+                `;
             } else {
-                // 將平板(md)以上的最大高度由 90vh 縮小至 75vh，避免頂天立地
-                modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-2xl transition-transform duration-300 scale-95 flex flex-col max-h-[85vh] md:max-h-[75vh]";
-                modalContent.innerHTML = `${closeBtnHTML}<div class="w-full h-full overflow-y-auto no-scrollbar flex flex-col relative"><div class="w-full aspect-[4/3] bg-neutral-100 overflow-hidden shrink-0"><img src="${data.media}" class="w-full h-full object-cover" alt="${data.title}"></div><div class="w-full p-6 md:p-8 flex flex-col flex-grow bg-white">${postContentHTML}</div></div>`;
+                // 強制 lg:h-[75vh]，讓高度主導寬度，撐起整個視窗
+                modalContent.className = "relative bg-white rounded-xl shadow-2xl overflow-hidden transition-transform duration-300 scale-95 flex flex-col lg:flex-row w-full max-w-[400px] md:max-w-[500px] lg:max-w-[95vw] lg:w-auto max-h-[85vh] md:max-h-[80vh] lg:h-[75vh]";
+                
+                modalContent.innerHTML = `
+                    ${closeBtnHTML}
+                    
+                    <!-- 讓圖片的高度跟隨視窗(75vh)，並強制自己成為完美的1:1正方形 -->
+                    <div class="hidden lg:block h-full aspect-square bg-neutral-100 overflow-hidden shrink-0 relative">
+                        <img src="${data.media}" class="absolute inset-0 w-full h-full object-cover" alt="${data.title}">
+                    </div>
+                    
+                    <div class="w-full lg:w-[400px] xl:w-[500px] flex flex-col flex-1 bg-white relative min-w-0 min-h-0">
+                        <div class="lg:absolute lg:inset-0 flex flex-col flex-1 w-full h-full min-h-0">
+                            
+                            <div class="flex-1 overflow-y-auto no-scrollbar min-h-0">
+                                
+                                <div class="block lg:hidden w-full aspect-square bg-neutral-100 overflow-hidden shrink-0 relative">
+                                    <img src="${data.media}" class="absolute inset-0 w-full h-full object-cover" alt="${data.title}">
+                                </div>
+                                
+                                <div class="p-6 md:p-8 pb-2 md:pb-4">
+                                    ${titleAndTextHTML}
+                                </div>
+                            </div>
+                            
+                            <div class="px-6 md:px-8 pb-6 md:pb-8 pt-4 border-t border-neutral-100 shrink-0 bg-white relative z-10">
+                                <a href="${data.link}" target="_blank" onclick="trackClick('${data.id}')" class="block w-full bg-[#0071E3] text-white font-bold py-3.5 rounded-lg text-center hover:bg-[#0071E3]/90 transition-colors shadow-lg shadow-blue-500/20">前往蝦皮領取優惠</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
             modal.classList.remove('hidden'); modal.classList.add('flex'); void modal.offsetWidth; 
@@ -528,7 +532,6 @@
 
         function handleBackdropClick(event) { if (event.target === modal) closeModal(); }
 
-        // 啟動主程式
         fetchProducts();
     </script>
 </body>
